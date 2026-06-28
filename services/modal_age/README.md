@@ -10,16 +10,17 @@ Small multi-head age-gating model. **Training** reads private crops from a Modal
 | `serve_cnn.py` | Modal serving: ONNX endpoint → raw age signals |
 
 ## Train
-Reads the dataset straight from HF `kamari-faces-v0` (published by the data notebook).
-Tracks training in **Weights & Biases** and uploads **weights + ONNX + thresholds +
-`metrics_v0.json` + `training_log.jsonl` + card** back to HF.
+Backbone **EfficientNetV2-S** (configurable). Reads the dataset from HF `kamari-faces-v0`,
+checkpoints every epoch to the `kamari-cnn` Volume (resumable), tracks in **W&B**, and
+uploads **best.pt + ONNX + thresholds + metrics + training log + benchmark/latency reports
++ card** back to HF. Model selection is **safety-weighted** (MAE + heavy Minor-Pass-Through).
 ```bash
-# W&B is optional — add WANDB_API_KEY to the secret to enable it
 modal secret create kamari-hf HF_TOKEN=... HF_NAMESPACE=... WANDB_API_KEY=... WANDB_PROJECT=kamari
-modal run services/modal_age/train_cnn.py --epochs 20
+modal run services/modal_age/train_cnn.py --epochs 30
 ```
-GPU defaults to `A100-80GB` (`export KAMARI_GPU=H100` for fastest). Eval reports MAE +
-Minor-Pass-Through Rate @18 on the frozen benchmark.
+GPU defaults to **H200** (`export KAMARI_GPU=H100` to change). Sampling = inverse-freq over
+(age-band × skin-band) + 13–21 boost + dark-skin boost. Eval = MAE overall + by
+skin/age/dataset/gender, **MPTR@18/@21 (incl. dark-skin)**, Adult-Block, latency p50/p95.
 
 ## Serve
 ```bash
@@ -35,6 +36,6 @@ curl -F image=@selfie.jpg https://<...>/estimate
 ```
 
 ## Notes
-- Training crops are never published (licence/consent). The ONNX + thresholds are.
-- The 13–21 boundary is oversampled 3×. Thresholds ship in `thresholds_v0.json`.
+- Training crops are never published (licence/consent). The ONNX + thresholds + reports are.
+- Resumable: re-running `modal run` continues from `last.pt` in the `kamari-cnn` Volume.
 - Estimate only — not a legal age determination.

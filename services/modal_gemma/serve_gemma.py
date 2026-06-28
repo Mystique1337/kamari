@@ -16,12 +16,12 @@ import os
 
 import modal
 
-GPU = os.environ.get("KAMARI_GPU", "A100-40GB")
-MODEL_ID = os.environ.get("GEMMA_MODEL_ID", "google/gemma-2-2b-it")
+GPU = os.environ.get("KAMARI_SERVE_GPU", "L4")  # 4B + adapter fits L4 (24GB); cheap to serve
+MODEL_ID = os.environ.get("GEMMA_MODEL_ID", "google/gemma-3-4b-it")
 
 image = (
     modal.Image.debian_slim(python_version="3.11")
-    .pip_install("torch", "transformers>=4.44", "peft>=0.12", "huggingface_hub",
+    .pip_install("torch", "transformers>=4.50", "peft>=0.12", "huggingface_hub",
                  "accelerate>=0.33", "fastapi[standard]")
 )
 app = modal.App("kamari-gemma-serve", image=image)
@@ -43,7 +43,8 @@ class Gemma:
         adapter = f"{ns}/gemma-explain-lora-v0"
         self.tok = AutoTokenizer.from_pretrained(MODEL_ID, token=token)
         base = AutoModelForCausalLM.from_pretrained(
-            MODEL_ID, torch_dtype=torch.bfloat16, device_map="auto", token=token)
+            MODEL_ID, torch_dtype=torch.bfloat16, device_map="auto",
+            attn_implementation="eager", token=token)
         self.model = PeftModel.from_pretrained(base, adapter, token=token)
         self.model.eval()
 

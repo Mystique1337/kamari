@@ -1,17 +1,17 @@
-"""Kámárí Gemma explanation layer — QLoRA fine-tune on Modal (GPU).
+"""Kámárí Gemma explanation layer — best-practice QLoRA fine-tune on Modal (GPU).
 
-Pulls the strict-JSON SFT dataset from Hugging Face `<HF_NAMESPACE>/gemma-sft-v0`,
-fine-tunes Gemma with QLoRA, tracks training in Weights & Biases, and uploads the
-**LoRA adapter + metrics + training log + card** to `<HF_NAMESPACE>/gemma-explain-lora-v0`.
+Pulls SFT data from HF `<HF_NAMESPACE>/gemma-sft-v0`, QLoRA-fine-tunes Gemma 4B, runs a
+comprehensive eval (JSON validity, schema compliance, policy/decision consistency,
+language correctness), tracks in W&B, checkpoints every epoch (resumable), and uploads the
+adapter + metrics + reports + card to `<HF_NAMESPACE>/gemma-explain-lora-v0`.
 
 Gemma EXPLAINS decisions — it never estimates age and never invents decision codes.
 
 Prereqs:
-    python training/gemma/build_sft_dataset.py --n 4000
+    python training/gemma/build_sft_dataset.py --n 6000
     huggingface-cli upload <ns>/gemma-sft-v0 training/gemma/sft_train.jsonl sft_train.jsonl --repo-type dataset
     huggingface-cli upload <ns>/gemma-sft-v0 training/gemma/sft_eval.jsonl  sft_eval.jsonl  --repo-type dataset
     modal secret create kamari-hf HF_TOKEN=... HF_NAMESPACE=... WANDB_API_KEY=... WANDB_PROJECT=kamari
-
 Run:
     modal run services/modal_gemma/train_gemma.py --epochs 3
 """
@@ -19,37 +19,41 @@ import os
 
 import modal
 
-GPU = os.environ.get("KAMARI_GPU", "A100-80GB")  # "H100" for the 12B variant
-MODEL_ID = os.environ.get("GEMMA_MODEL_ID", "google/gemma-2-2b-it")
+GPU = os.environ.get("KAMARI_GPU", "H200")  # user has H200
+# Gemma 4B (multimodal-capable; used text-only here). HF_TOKEN must accept the Gemma licence.
+MODEL_ID = os.environ.get("GEMMA_MODEL_ID", "google/gemma-3-4b-it")
 
 image = (
     modal.Image.debian_slim(python_version="3.11")
     .pip_install(
-        "torch", "transformers>=4.44", "peft>=0.12", "trl>=0.9", "datasets>=2.20",
+        "torch", "transformers>=4.50", "peft>=0.12", "trl>=0.11", "datasets>=2.20",
         "bitsandbytes>=0.43", "accelerate>=0.33", "huggingface_hub", "wandb",
     )
 )
 app = modal.App("kamari-gemma-train", image=image)
 out_vol = modal.Volume.from_name("kamari-gemma", create_if_missing=True)
 hf_secret = modal.Secret.from_name("kamari-hf")
+OUT = "/out"
+
+VALID_DECISIONS = {"allow", "block", "secondary_check", "recapture"}
+VALID_REASONS = {
+    "ALLOW", "BLOCK_LIKELY_MINOR", "SECONDARY_CHECK_NEAR_THRESHOLD",
+    "SECONDARY_CHECK_LOW_CONFIDENCE", "RECAPTURE_LOW_QUALITY", "RECAPTURE_NO_FACE",
+    "RECAPTURE_MULTIPLE_FACES", "ERROR_UNSUPPORTED_IMAGE",
+}
+VALID_NEXT = {"proceed", "request_id_or_guardian_flow", "retake_photo", "manual_review"}
+REQUIRED_KEYS = {"decision", "reason_code", "user_message", "admin_summary", "next_step", "language", "safety_note"}
 
 
-def _format(example) -> str:
-    import json
-    inp = json.dumps(example["input"], ensure_ascii=False)
-    out = json.dumps(example["output"], ensure_ascii=False)
-    return (f"<start_of_turn>user\n{example['instruction']}\nInput: {inp}<end_of_turn>\n"
-            f"<start_of_turn>model\n{out}<end_of_turn>")
-
-
-@app.function(gpu=GPU, timeout=60 * 60 * 6, volumes={"/out": out_vol}, secrets=[hf_secret])
-def train(epochs: int = 3, lr: float = 2e-4, rank: int = 16):
+@app.function(gpu=GPU, timeout=60 * 60 * 12, volumes={OUT: out_vol}, secrets=[hf_secret])
+def train(epochs: int = 3, lr: float = 2e-4, rank: int = 32):
     import json
     import torch
     from datasets import load_dataset
     from huggingface_hub import snapshot_download
     from peft import LoraConfig
     from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+    from transformers.trainer_utils import get_last_checkpoint
     from trl import SFTConfig, SFTTrainer
 
     token, ns = os.environ["HF_TOKEN"], os.environ.get("HF_NAMESPACE", "kamari")
@@ -57,7 +61,6 @@ def train(epochs: int = 3, lr: float = 2e-4, rank: int = 16):
     if use_wandb:
         os.environ.setdefault("WANDB_PROJECT", os.environ.get("WANDB_PROJECT", "kamari"))
 
-    # --- Pull SFT data from HF ---
     sft_dir = snapshot_download(f"{ns}/gemma-sft-v0", repo_type="dataset", token=token)
     ds = load_dataset("json", data_files={
         "train": os.path.join(sft_dir, "sft_train.jsonl"),
@@ -65,42 +68,121 @@ def train(epochs: int = 3, lr: float = 2e-4, rank: int = 16):
     })
 
     tok = AutoTokenizer.from_pretrained(MODEL_ID, token=token)
+    if tok.pad_token is None:
+        tok.pad_token = tok.eos_token
     bnb = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4",
-                             bnb_4bit_compute_dtype=torch.bfloat16)
+                             bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_use_double_quant=True)
     model = AutoModelForCausalLM.from_pretrained(
-        MODEL_ID, quantization_config=bnb, device_map="auto",
-        torch_dtype=torch.bfloat16, token=token)
+        MODEL_ID, quantization_config=bnb, device_map="auto", torch_dtype=torch.bfloat16,
+        attn_implementation="eager", token=token)
+
+    def to_text(ex, with_answer=True):
+        user = f"{ex['instruction']}\nInput: {json.dumps(ex['input'], ensure_ascii=False)}"
+        msgs = [{"role": "user", "content": user}]
+        if with_answer:
+            msgs.append({"role": "assistant", "content": json.dumps(ex["output"], ensure_ascii=False)})
+        return tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=not with_answer)
+
+    def formatting(batch):
+        keys = list(batch.keys())
+        return [to_text({k: batch[k][i] for k in keys}) for i in range(len(batch[keys[0]]))]
 
     lora = LoraConfig(r=rank, lora_alpha=rank * 2, lora_dropout=0.05, bias="none",
                       task_type="CAUSAL_LM",
-                      target_modules=["q_proj", "k_proj", "v_proj", "o_proj"])
-    cfg = SFTConfig(output_dir="/out/adapter", num_train_epochs=epochs,
-                    per_device_train_batch_size=8, gradient_accumulation_steps=2,
-                    learning_rate=lr, bf16=True, logging_steps=20,
-                    eval_strategy="epoch", save_strategy="epoch",
-                    run_name=f"gemma-lora-{rank}",
-                    report_to=["wandb"] if use_wandb else [])
+                      target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"])
+    cfg = SFTConfig(
+        output_dir=OUT + "/adapter", num_train_epochs=epochs,
+        per_device_train_batch_size=8, gradient_accumulation_steps=4,
+        learning_rate=lr, lr_scheduler_type="cosine", warmup_ratio=0.03, weight_decay=0.01,
+        bf16=True, gradient_checkpointing=True, gradient_checkpointing_kwargs={"use_reentrant": False},
+        packing=True, neftune_noise_alpha=5, max_seq_length=1024,
+        logging_steps=20, eval_strategy="epoch", save_strategy="epoch", save_total_limit=2,
+        load_best_model_at_end=True, metric_for_best_model="eval_loss", greater_is_better=False,
+        run_name=f"gemma4b-lora-r{rank}", report_to=["wandb"] if use_wandb else [],
+    )
     trainer = SFTTrainer(model=model, args=cfg, train_dataset=ds["train"],
-                         eval_dataset=ds["eval"], peft_config=lora,
-                         formatting_func=lambda b: [_format(x) for x in _batch(b)])
-    trainer.train()
-    trainer.save_model("/out/adapter")
-    tok.save_pretrained("/out/adapter")
-
-    # Persist full metric history alongside the adapter.
-    metrics = {"base": MODEL_ID, "epochs": epochs, "rank": rank,
-               "log_history": trainer.state.log_history}
-    json.dump(metrics, open("/out/adapter/metrics_v0.json", "w"), indent=2)
+                         eval_dataset=ds["eval"], peft_config=lora, formatting_func=formatting)
+    resume = get_last_checkpoint(cfg.output_dir) if os.path.isdir(cfg.output_dir) else None
+    trainer.train(resume_from_checkpoint=resume)
+    trainer.save_model(OUT + "/adapter")
+    tok.save_pretrained(OUT + "/adapter")
     out_vol.commit()
 
-    _push_adapter("/out/adapter", epochs, metrics)
-    return {"epochs": epochs, "base": MODEL_ID,
-            "final": trainer.state.log_history[-1] if trainer.state.log_history else {}}
+    # ---------------- comprehensive eval ----------------
+    eval_metrics = _evaluate(trainer.model, tok, ds["eval"], to_text)
+    metrics = {"base": MODEL_ID, "gpu": GPU, "epochs": epochs, "rank": rank,
+               "final_loss": (trainer.state.log_history[-1] if trainer.state.log_history else {}),
+               "eval": eval_metrics}
+    if use_wandb:
+        import wandb
+        wandb.log({f"gemma_eval/{k}": v for k, v in eval_metrics.items() if isinstance(v, (int, float))})
+    json.dump(metrics, open(OUT + "/adapter/metrics_v0.json", "w"), indent=2)
+    open(OUT + "/adapter/gemma_eval_report.md", "w").write(_report(metrics))
+    out_vol.commit()
+    _push_adapter(OUT + "/adapter", epochs, metrics)
+    return {"eval": eval_metrics}
 
 
-def _batch(b):
-    keys = list(b.keys())
-    return [{k: b[k][i] for k in keys} for i in range(len(b[keys[0]]))]
+def _evaluate(model, tok, eval_ds, to_text, n=200):
+    """JSON validity, schema compliance, policy/decision consistency, language correctness."""
+    import json
+    import torch
+    model.eval()
+    n = min(n, len(eval_ds))
+    stats = dict(total=n, json_valid=0, schema_ok=0, reason_match=0, decision_match=0,
+                 lang_ok=0, no_invented_codes=0)
+    for i in range(n):
+        ex = eval_ds[i]
+        prompt = to_text(ex, with_answer=False)
+        ids = tok(prompt, return_tensors="pt").to(model.device)
+        with torch.no_grad():
+            out = model.generate(**ids, max_new_tokens=256, do_sample=False, pad_token_id=tok.pad_token_id)
+        text = tok.decode(out[0][ids["input_ids"].shape[1]:], skip_special_tokens=True)
+        gold = ex["output"]
+        try:
+            obj = json.loads(text[text.index("{"):text.rindex("}") + 1])
+            stats["json_valid"] += 1
+        except Exception:
+            continue
+        if REQUIRED_KEYS.issubset(obj) and obj.get("decision") in VALID_DECISIONS \
+                and obj.get("next_step") in VALID_NEXT and obj.get("reason_code") in VALID_REASONS:
+            stats["schema_ok"] += 1
+        if obj.get("reason_code") in VALID_REASONS:
+            stats["no_invented_codes"] += 1
+        if obj.get("reason_code") == gold.get("reason_code"):
+            stats["reason_match"] += 1
+        if obj.get("decision") == gold.get("decision"):
+            stats["decision_match"] += 1
+        if str(obj.get("language")) == str(ex["input"].get("language")):
+            stats["lang_ok"] += 1
+    t = max(1, stats["total"])
+    return {**stats,
+            "json_validity": round(stats["json_valid"] / t, 4),
+            "schema_compliance": round(stats["schema_ok"] / t, 4),
+            "policy_consistency": round(stats["reason_match"] / t, 4),
+            "decision_consistency": round(stats["decision_match"] / t, 4),
+            "language_correctness": round(stats["lang_ok"] / t, 4),
+            "invented_code_rate": round(1 - stats["no_invented_codes"] / t, 4)}
+
+
+def _report(m):
+    e = m["eval"]
+    return f"""# Kámárí Gemma Explanation — Eval Report (v0)
+
+Base **{m['base']}** · GPU {m['gpu']} · {m['epochs']} epochs · LoRA r={m['rank']} · n={e['total']}
+
+| metric | value |
+|---|---|
+| JSON validity | {e['json_validity']} |
+| Schema compliance | {e['schema_compliance']} |
+| Policy consistency (reason_code) | {e['policy_consistency']} |
+| Decision consistency | {e['decision_consistency']} |
+| Language correctness | {e['language_correctness']} |
+| Invented-code rate (lower better) | {e['invented_code_rate']} |
+
+Gemma explains decisions only; it never estimates age and chooses reason codes from the
+fixed list. Non-English strings still need native-speaker review before release.
+"""
 
 
 def _push_adapter(adapter_dir, epochs, metrics):
@@ -109,7 +191,7 @@ def _push_adapter(adapter_dir, epochs, metrics):
     repo = f"{ns}/gemma-explain-lora-v0"
     api = HfApi(token=token)
     api.create_repo(repo, repo_type="model", private=True, exist_ok=True)
-    final = metrics["log_history"][-1] if metrics.get("log_history") else {}
+    e = metrics["eval"]
     card = f"""---
 license: gemma
 tags: [kamari, gemma, lora, age-gating, explanation, multilingual]
@@ -118,18 +200,19 @@ base_model: {MODEL_ID}
 
 # Kámárí Gemma Explanation LoRA v0
 
-LoRA adapter that turns CNN + policy signals into safe, multilingual, strict-JSON
-age-gating explanations (en, sw, yo, ha, am, fr, ar). Base: `{MODEL_ID}`. {epochs} epochs.
+LoRA adapter turning CNN + policy signals into safe, multilingual, strict-JSON age-gating
+explanations (en, sw, yo, ha, am, fr, ar). Base: `{MODEL_ID}`. {epochs} epochs.
 
-- Final eval loss: **{final.get('eval_loss', 'n/a')}**
-- Output conforms to `training/gemma/output_schema.json`. Full metrics in `metrics_v0.json`.
+## Eval
+- JSON validity **{e['json_validity']}** · schema compliance **{e['schema_compliance']}**
+- policy consistency **{e['policy_consistency']}** · decision consistency **{e['decision_consistency']}**
+- language correctness **{e['language_correctness']}** · invented-code rate **{e['invented_code_rate']}**
 
-Gemma explains — it never estimates age and never invents decision codes. Non-English
-strings need native-speaker review before release.
+Full report in `gemma_eval_report.md`; metrics in `metrics_v0.json`. Gemma explains — it never
+estimates age and never invents decision codes.
 """
     api.upload_folder(folder_path=adapter_dir, repo_id=repo, repo_type="model")
-    api.upload_file(path_or_fileobj=card.encode(), path_in_repo="README.md",
-                    repo_id=repo, repo_type="model")
+    api.upload_file(path_or_fileobj=card.encode(), path_in_repo="README.md", repo_id=repo, repo_type="model")
     print("pushed ->", repo)
 
 
