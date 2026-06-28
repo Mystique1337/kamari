@@ -1,0 +1,35 @@
+"""Gateway settings (env-driven). See infra/railway for deployment env."""
+from functools import lru_cache
+
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    # ML endpoints (Modal). Empty -> gateway uses a built-in mock so it runs standalone.
+    modal_age_endpoint: str = ""
+    modal_gemma_endpoint: str = ""
+
+    # Supabase (logging/audit). Optional in dev.
+    supabase_url: str = ""
+    supabase_service_role_key: str = ""
+
+    # Security
+    api_key_pepper: str = "dev-pepper-change-me"
+    require_api_key: bool = False  # set True in production
+
+    # Policy thresholds (mirrors training/cnn thresholds_v0.json defaults)
+    block_p_under_18: float = 0.70
+    challenge_threshold: int = 21
+    legal_threshold: int = 18
+    uncertainty_threshold: float = 0.28
+    min_quality: float = 0.40
+
+    retention_default: str = "image_not_stored"
+    use_gemma_message: bool = True
+
+
+@lru_cache
+def get_settings() -> Settings:
+    return Settings()
