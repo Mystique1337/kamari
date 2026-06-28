@@ -37,6 +37,10 @@ the dataset is not directly open-downloadable: `APPA_REAL_URL`, `ADIENCE_URL`, `
 The v2 notebook records request/agreement-only datasets as access gaps until approved sources
 are supplied; it does not silently drop them.
 
+Tracked source/download URLs live in `data/registry/dataset_sources.yaml`. Direct-download
+defaults are already present in `.env.example`; request/agreement-only entries stay blank
+until access is approved.
+
 ## Hand-off
 The final cell prints the HF dataset links. Training reads from `kamari-faces-v0`; nothing
 else is needed to kick off CNN training on Modal.

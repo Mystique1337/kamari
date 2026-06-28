@@ -1,0 +1,133 @@
+# Kámárí dataset source and download URL registry.
+#
+# `download_url` is set only when the URL is intended to be directly downloadable by
+# the v2 Colab notebook. `source_url` may be a landing/request page and should not be
+# treated as an approved archive by itself.
+version: v0
+updated: 2026-06-28
+
+datasets:
+  - name: UTKFace
+    env: KAGGLE_USERNAME/KAGGLE_KEY
+    source_url: https://www.kaggle.com/datasets/jangedoo/utkface-new
+    download_url: kaggle:jangedoo/utkface-new
+    access: kaggle
+
+  - name: FairFace
+    env: FAIRFACE_URL
+    source_url: https://github.com/joojs/fairface
+    download_url: https://drive.google.com/uc?export=download&id=1Z1RqRo0_JiavaZw2yzZG6WETdZQ8qX86
+    extra_files:
+      - https://drive.google.com/uc?export=download&id=1i1L3Yqwaio7YSOCj7ftgk8ZZchPG7dmH
+      - https://drive.google.com/uc?export=download&id=1wOdja-ezstMEp81tX1a-EYkFebev4h7D
+    access: open_download
+
+  - name: APPA-REAL
+    env: APPA_REAL_URL
+    source_url: https://chalearnlap.cvc.uab.cat/dataset/26/description/
+    download_url: https://data.chalearnlap.cvc.uab.cat/AppaRealAge/appa-real-release.zip
+    access: open_download
+
+  - name: Adience
+    env: ADIENCE_URL
+    source_url: https://www.cslab.openu.ac.il/download/
+    download_url: ""
+    access: request_page
+
+  - name: AgeDB
+    env: AGEDB_URL or AGEDB_HF_REPO
+    source_url: https://ibug.doc.ic.ac.uk/resources/agedb/
+    download_url: ""
+    access: request
+
+  - name: FG-NET
+    env: FGNET_URL
+    source_url: https://yanweifu.github.io/FG_NET_data/
+    download_url: http://yanweifu.github.io/FG_NET_data/FGNET.zip
+    access: open_download
+
+  - name: All-Age-Faces
+    env: AAF_URL or AAF_HF_REPO
+    source_url: https://github.com/JingchunCheng/All-Age-Faces-Dataset
+    download_url: https://www.dropbox.com/s/a0lj1ddd54ns8qy/All-Age-Faces%20Dataset.zip?dl=1
+    access: open_download
+
+  - name: IMDB-WIKI
+    env: KAMARI_DOWNLOAD_LARGE
+    source_url: https://data.vision.ee.ethz.ch/cvl/rrothe/imdb-wiki/
+    download_urls:
+      - https://data.vision.ee.ethz.ch/cvl/rrothe/imdb-wiki/static/wiki_crop.tar
+      - https://data.vision.ee.ethz.ch/cvl/rrothe/imdb-wiki/static/imdb_crop.tar
+    access: open_download_large
+
+  - name: FAGE_v2
+    env: FAGE_HF_REPO
+    source_url: https://arxiv.org/abs/2408.06806
+    download_url: ""
+    access: contact_or_hf
+
+  - name: AxonData-10-30
+    env: AXONDATA_URL or AXONDATA_HF_REPO
+    source_url: https://huggingface.co/datasets
+    download_url: ""
+    access: hf_or_url_verify_terms
+
+  - name: LFW
+    env: LFW_URL
+    source_url: http://vis-www.cs.umass.edu/lfw/
+    download_url: http://vis-www.cs.umass.edu/lfw/lfw.tgz
+    access: open_download
+
+  - name: RFW
+    env: RFW_URL or RFW_HF_REPO
+    source_url: http://www.whdeng.cn/RFW/index.html
+    download_url: ""
+    access: request
+
+  - name: BFW
+    env: BFW_URL or BFW_HF_REPO
+    source_url: https://github.com/visionjo/facerec-bias-bfw
+    download_url: https://www.dropbox.com/scl/fo/i2gj82qewyikts2d55xo5/AK5cY0nmJ7Of-iHmD6eF9E4?rlkey=ebj8bbq0giwk30v75r51vsw75&st=slcmpmbn&dl=1
+    access: open_download_research
+
+  - name: AgeDB-30
+    env: AGEDB_URL or AGEDB_HF_REPO
+    source_url: https://ibug.doc.ic.ac.uk/resources/agedb/
+    download_url: uses AgeDB
+    access: uses_agedb
+
+  - name: CelebA-Spoof
+    env: CELEBA_SPOOF_URL or CELEBA_SPOOF_HF_REPO
+    source_url: https://github.com/ZhangYuanhan-AI/CelebA-Spoof
+    download_url: https://drive.google.com/drive/folders/1OW_1bawO79pRqdVEVmBzp8HSxdSwln_Z?usp=sharing
+    access: research_google_drive
+
+  - name: CeFA / CASIA-SURF-CeFA
+    env: CEFA_URL
+    source_url: https://sites.google.com/qq.com/face-anti-spoofing/dataset-download/casia-surf-cefa
+    download_url: ""
+    access: agreement
+
+  - name: OULU-NPU
+    env: OULU_NPU_URL
+    source_url: https://sites.google.com/site/oulunpudatabase/
+    download_url: ""
+    access: agreement
+
+  - name: CASIA-Face-Africa
+    env: CASIA_FACE_AFRICA_URL
+    source_url: http://www.cripacsir.cn/dataset/
+    download_url: ""
+    access: agreement
+
+  - name: BVC-UNN
+    env: BVC_UNN_URL
+    source_url: request from dataset owners / University of Nigeria Nsukka
+    download_url: ""
+    access: request
+
+  - name: NEFI
+    env: NEFI_URL
+    source_url: verify current NEFI dataset access with authors
+    download_url: ""
+    access: request
