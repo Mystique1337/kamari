@@ -3,12 +3,12 @@ import {
   IonButton, IonIcon, IonSpinner,
 } from '@ionic/react';
 import {
-  keyOutline, pulseOutline, shieldCheckmarkOutline, serverOutline, logOutOutline,
+  keyOutline, pulseOutline, shieldCheckmarkOutline, serverOutline, logOutOutline, sparklesOutline,
 } from 'ionicons/icons';
 import { useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { apiMode, usageSummary } from '../lib/api';
+import { apiMode, usageSummary, getPlan } from '../lib/api';
 import { useAuth } from '../lib/auth';
 
 export default function DeveloperDashboard() {
@@ -26,6 +26,12 @@ export default function DeveloperDashboard() {
     queryFn: () => usageSummary(token as string),
     enabled: Boolean(token),
   });
+  const { data: plan } = useQuery({
+    queryKey: ['plan', token],
+    queryFn: () => getPlan(token as string),
+    enabled: Boolean(token),
+  });
+  const quotaPct = plan ? Math.min(100, Math.round((plan.used_this_month / plan.monthly_quota) * 100)) : 0;
 
   const stats = [
     { label: 'Requests', value: usage ? String(usage.total) : '0' },
@@ -72,6 +78,28 @@ export default function DeveloperDashboard() {
               <div className="kamari-muted" style={{ fontSize: '.8rem' }}>{s.label}</div>
             </div>
           ))}
+        </div>
+
+        <div className="kamari-card kamari-pad" style={{ marginTop: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <p className="kamari-eyebrow" style={{ color: 'var(--kamari-terracotta)', margin: 0 }}>Your plan</p>
+              <strong style={{ fontSize: '1.1rem' }}>{plan ? plan.label : 'Free'}</strong>
+            </div>
+            <IonButton size="small" fill="outline" color="primary" onClick={() => history.push('/pricing')}>
+              <IonIcon slot="start" icon={sparklesOutline} /> Plans
+            </IonButton>
+          </div>
+          {plan && (
+            <div style={{ marginTop: 10 }}>
+              <div style={{ height: 8, borderRadius: 6, background: 'rgba(33,58,107,.12)', overflow: 'hidden' }}>
+                <div style={{ width: `${quotaPct}%`, height: '100%', background: 'var(--kamari-gold)' }} />
+              </div>
+              <p className="kamari-muted" style={{ margin: '6px 0 0', fontSize: '.8rem' }}>
+                {plan.used_this_month.toLocaleString()} of {plan.monthly_quota.toLocaleString()} checks this month · {plan.rpm}/min
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="kamari-card kamari-pad" style={{ marginTop: 14, display: 'flex', gap: 12 }}>

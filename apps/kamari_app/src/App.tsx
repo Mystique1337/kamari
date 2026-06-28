@@ -9,6 +9,7 @@ import AgeResult from './pages/AgeResult';
 import SecondaryCheck from './pages/SecondaryCheck';
 import GuardianConsent from './pages/GuardianConsent';
 import Login from './pages/Login';
+import Pricing from './pages/Pricing';
 import DeveloperDashboard from './pages/DeveloperDashboard';
 import ApiKeys from './pages/ApiKeys';
 import UsageLogs from './pages/UsageLogs';
@@ -25,6 +26,7 @@ export default function App() {
           <Route exact path="/secondary" component={SecondaryCheck} />
           <Route exact path="/guardian" component={GuardianConsent} />
           <Route exact path="/login" component={Login} />
+          <Route exact path="/pricing" component={Pricing} />
           <Route exact path="/developer" component={DeveloperDashboard} />
           <Route exact path="/developer/keys" component={ApiKeys} />
           <Route exact path="/developer/usage" component={UsageLogs} />

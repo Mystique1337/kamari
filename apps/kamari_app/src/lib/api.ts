@@ -95,6 +95,35 @@ export async function sendWelcome(email: string): Promise<void> {
   } catch { /* best effort */ }
 }
 
+// ---------------- plans / pricing ----------------
+export interface Plan {
+  key: string; label: string; price_usd: number;
+  rpm: number; monthly_quota: number; blurb: string; features: string[];
+}
+export interface CurrentPlan {
+  plan: string; label: string; rpm: number; monthly_quota: number; used_this_month: number;
+}
+
+export async function listPlans(): Promise<Plan[]> {
+  const res = await fetch(`${API_URL}/v1/account/plans`);
+  if (!res.ok) throw new Error(`Could not load plans (${res.status})`);
+  return (await res.json()).plans;
+}
+
+export async function getPlan(token: string): Promise<CurrentPlan> {
+  const res = await fetch(`${API_URL}/v1/account/plan`, { headers: authHeaders(token) });
+  if (!res.ok) throw new Error(`Could not load plan (${res.status})`);
+  return res.json();
+}
+
+export async function setPlan(token: string, plan: string): Promise<void> {
+  const res = await fetch(`${API_URL}/v1/account/plan`, {
+    method: 'POST', headers: { ...authHeaders(token), 'Content-Type': 'application/json' },
+    body: JSON.stringify({ plan }),
+  });
+  if (!res.ok) throw new Error(`Could not change plan (${res.status})`);
+}
+
 // ---------------- guardian consent (public) ----------------
 export async function guardianRequest(
   guardianEmail: string, appName = 'Kamari', guardianName = '',

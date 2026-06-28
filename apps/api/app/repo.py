@@ -114,6 +114,30 @@ async def org_id_for_user(user: dict) -> str | None:
     return res.data[0]["id"] if res.data else None
 
 
+async def owner_for_org(org_id: str) -> str | None:
+    if get_client() is None:
+        return None
+    res = await asyncio.to_thread(
+        lambda: _tbl("organizations").select("owner_auth_id").eq("id", org_id).limit(1).execute())
+    return res.data[0]["owner_auth_id"] if res.data else None
+
+
+async def month_count(org_id: str) -> int:
+    """Count this org's age checks since the start of the current UTC month."""
+    if get_client() is None:
+        return 0
+    from datetime import datetime, timezone
+    start = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    try:
+        res = await asyncio.to_thread(
+            lambda: _tbl("inference_requests").select("id", count="exact")
+            .eq("organization_id", org_id).gte("created_at", start.isoformat()).execute())
+        return res.count or 0
+    except Exception as e:  # noqa: BLE001
+        print("[repo] month_count failed:", e)
+        return 0
+
+
 async def get_key_name(user: dict, key_id: str) -> str | None:
     org_id = await org_id_for_user(user)
     if not org_id:

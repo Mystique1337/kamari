@@ -47,6 +47,15 @@ export default function Welcome() {
             <IonIcon slot="start" icon={codeSlashOutline} />
             I am a developer
           </IonButton>
+          <IonButton
+            expand="block"
+            fill="clear"
+            size="small"
+            color="medium"
+            onClick={() => history.push('/pricing')}
+          >
+            View pricing
+          </IonButton>
           <p className="kamari-muted kamari-center" style={{ fontSize: '.8rem' }}>
             An estimate, not a legal determination.
           </p>
