@@ -9,8 +9,9 @@ dist/
 *.local
 .eslintcache
 
-# Capacitor generated native projects (regenerated via `npx cap add`)
-apps/kamari_app/android/
+# Capacitor: the Android project is committed so CI can build the APK with our
+# manifest (camera permission). Its own android/.gitignore excludes build output.
+# iOS is regenerated on demand via `npx cap add ios`.
 apps/kamari_app/ios/
 
 # --- Python / API & ML (apps/api, training, services) ---
