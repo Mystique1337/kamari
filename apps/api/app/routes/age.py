@@ -40,7 +40,7 @@ async def estimate(
         message = gemma["user_message"]
 
     # NB: image_bytes is never persisted (retention default = no-store).
-    return AgeEstimateResponse(
+    resp = AgeEstimateResponse(
         request_id=request_id,
         model_version=signals.model_version,
         estimated_age=signals.estimated_age,
@@ -53,3 +53,13 @@ async def estimate(
         message=message,
         retention=s.retention_default,
     )
+    # Audit log: metadata only, never the image. Best-effort (no-op without DATABASE_URL).
+    from .. import repo
+    await repo.log_inference({
+        "request_id": request_id, "endpoint": "/v1/age/estimate",
+        "model_version": resp.model_version, "decision": resp.decision.value,
+        "reason_code": resp.reason_code.value, "face_quality": resp.face_quality,
+        "estimated_age": resp.estimated_age, "p_under_18": resp.p_under_18,
+        "uncertainty": resp.uncertainty, "retention": resp.retention,
+    })
+    return resp

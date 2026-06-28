@@ -59,6 +59,9 @@ if get_settings().database_url:
     app.include_router(fastapi_users.get_register_router(UserRead, UserCreate), prefix="/v1/auth", tags=["auth"])
     app.include_router(fastapi_users.get_users_router(UserRead, UserUpdate), prefix="/v1/users", tags=["auth"])
 
+    from .routes import keys
+    app.include_router(keys.router)
+
 
 @app.get("/")
 async def root() -> dict:

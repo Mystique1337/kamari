@@ -14,7 +14,7 @@ from ..schemas.age import CnnSignals
 async def cnn_estimate(image_bytes: bytes, filename: str, s: Settings) -> CnnSignals:
     if not s.modal_age_endpoint:
         return _mock_cnn()
-    async with httpx.AsyncClient(timeout=20) as client:
+    async with httpx.AsyncClient(timeout=180) as client:
         resp = await client.post(
             s.modal_age_endpoint,
             files={"image": (filename or "selfie.jpg", image_bytes, "image/jpeg")},
@@ -28,7 +28,7 @@ async def gemma_explain(cnn_result: dict, policy_context: dict, language: str, s
     if not s.modal_gemma_endpoint or not s.use_gemma_message:
         return None
     try:
-        async with httpx.AsyncClient(timeout=20) as client:
+        async with httpx.AsyncClient(timeout=180) as client:
             resp = await client.post(
                 s.modal_gemma_endpoint,
                 json={"cnn_result": cnn_result, "policy_context": policy_context, "language": language},

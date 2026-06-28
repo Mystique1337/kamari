@@ -22,7 +22,8 @@ async def require_key(authorization: str | None = Header(default=None)) -> str |
     if not authorization or not authorization.lower().startswith("bearer "):
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "missing bearer api key")
     raw = authorization.split(" ", 1)[1].strip()
-    # TODO: look up hash_key(raw, s.api_key_pepper) in Supabase api_keys and check scopes.
-    if not raw:
+    from .. import repo
+    info = await repo.validate_api_key(raw)
+    if not info:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "invalid api key")
-    return hash_key(raw, s.api_key_pepper)
+    return str(info.get("organization_id"))
