@@ -35,11 +35,13 @@ No raw face images or embeddings stored by default · metadata + audit logs only
 - Branches: `main` (prod) · `staging` · `feature/*` · `model/*`.
 
 ## Status
-- ✅ Data pipeline - single Colab notebook (`notebooks/kamari_data_pipeline_v3_new_fast.ipynb`): gather → auto label-quality gate → preprocess → EDA → HF. *Run on Colab.*
-- ✅ App MVP - `apps/kamari_app` (Ionic React + Capacitor + PWA), African design system, full Welcome→Consent→Camera→Result flow on a mock-to-live API seam.
-- ✅ API gateway - `apps/api` (FastAPI): policy engine, fastapi-users JWT auth over Postgres+pgvector, Modal clients, mock-to-live.
-- ✅ **CNN trained** - `tf_efficientnetv2_s`, 30 epochs, **MAE 6.03** (held-out). ONNX for CPU serving.
-- ⏳ **Gemma 4 (E4B) fine-tune** - in progress on Modal H200.
+- ✅ Data pipeline - single Colab notebook (`notebooks/`): gather → auto label-quality gate → preprocess → EDA → HF. *Run on Colab.*
+- ✅ App - `apps/kamari_app` (Ionic React + Capacitor + PWA): consumer age check (language + country picker, liveness secondary check, guardian consent), and a developer portal (Supabase GoTrue auth, live API keys, org-scoped usage + logs). Ships web, PWA, and a downloadable Android APK.
+- ✅ API gateway - `apps/api` (FastAPI): policy engine, Supabase GoTrue JWT verification, data via Supabase REST, Modal clients, org-scoped usage analytics, guardian consent flow, and transactional email via n8n. Mock-to-live.
+- ✅ **CNN trained** - `tf_efficientnetv2_s`, **MAE 6.03** (held-out), MPTR@18 reported by skin band. Served on CPU.
+- ✅ **Gemma 4 (E4B) fine-tuned** - QLoRA explanation/policy adapter, strict-JSON. Served on GPU.
+- ✅ **Serving always-on** - CNN + Gemma keep one warm container each (`min_containers=1`); no cold starts.
+- ✅ **Email** - live n8n "Dynamic Email Template Sender": welcome, API key created/revoked, guardian consent. Branded, customised templates.
 
 ### Trained artifacts (Hugging Face, namespace `Shinzmann`)
 | Artifact | Repo |
@@ -56,6 +58,8 @@ No raw face images or embeddings stored by default · metadata + audit logs only
 |---|---|
 | Data gather/clean/EDA/upload | Google Colab → Hugging Face |
 | CNN + Gemma **training** | Modal (H200) |
-| **CNN serving** | **CPU** (ONNX, ~14 ms) |
-| **Gemma serving** | **GPU** (4B; CPU/q4-GGUF optional) |
-| App + API gateway | Local / Railway |
+| **CNN serving** | **CPU**, always-on (`best.pt`) |
+| **Gemma serving** | **GPU** L4, always-on (4B + LoRA) |
+| App (web/PWA) + API gateway | Railway |
+| Android APK | GitHub Actions artifact |
+| Email | n8n (Gmail) |
