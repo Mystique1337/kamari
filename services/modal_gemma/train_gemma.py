@@ -118,8 +118,14 @@ def train(epochs: int = 3, lr: float = 2e-4, rank: int = 32):
     tok.save_pretrained(OUT + "/adapter")
     out_vol.commit()
 
-    # ---------------- comprehensive eval ----------------
-    eval_metrics = _evaluate(trainer.model, tok, ds["eval"], to_text)
+    # ---------------- comprehensive eval (non-fatal: never lose the trained adapter) ----------------
+    try:
+        eval_metrics = _evaluate(trainer.model, tok, ds["eval"], to_text)
+    except Exception as e:
+        print("post-train eval failed; pushing adapter anyway:", e)
+        eval_metrics = {"error": str(e), "total": 0, "json_validity": None, "schema_compliance": None,
+                        "policy_consistency": None, "decision_consistency": None,
+                        "language_correctness": None, "invented_code_rate": None}
     metrics = {"base": MODEL_ID, "gpu": GPU, "epochs": epochs, "rank": rank,
                "final_loss": (trainer.state.log_history[-1] if trainer.state.log_history else {}),
                "eval": eval_metrics}
@@ -142,29 +148,29 @@ def _evaluate(model, tok, eval_ds, to_text, n=200):
     stats = dict(total=n, json_valid=0, schema_ok=0, reason_match=0, decision_match=0,
                  lang_ok=0, no_invented_codes=0)
     for i in range(n):
-        ex = eval_ds[i]
-        prompt = to_text(ex, with_answer=False)
-        ids = tok(prompt, return_tensors="pt").to(model.device)
-        with torch.no_grad():
-            out = model.generate(**ids, max_new_tokens=256, do_sample=False, pad_token_id=tok.pad_token_id)
-        text = tok.decode(out[0][ids["input_ids"].shape[1]:], skip_special_tokens=True)
-        gold = ex["output"]
         try:
+            ex = eval_ds[i]
+            prompt = to_text(ex, with_answer=False)
+            ids = tok(prompt, return_tensors="pt").to(model.device)
+            with torch.no_grad():
+                out = model.generate(**ids, max_new_tokens=256, do_sample=False, pad_token_id=tok.pad_token_id)
+            text = tok.decode(out[0][ids["input_ids"].shape[1]:], skip_special_tokens=True)
+            gold = ex["output"]
             obj = json.loads(text[text.index("{"):text.rindex("}") + 1])
             stats["json_valid"] += 1
+            if REQUIRED_KEYS.issubset(obj) and obj.get("decision") in VALID_DECISIONS \
+                    and obj.get("next_step") in VALID_NEXT and obj.get("reason_code") in VALID_REASONS:
+                stats["schema_ok"] += 1
+            if obj.get("reason_code") in VALID_REASONS:
+                stats["no_invented_codes"] += 1
+            if obj.get("reason_code") == gold.get("reason_code"):
+                stats["reason_match"] += 1
+            if obj.get("decision") == gold.get("decision"):
+                stats["decision_match"] += 1
+            if str(obj.get("language")) == str(ex["input"].get("language")):
+                stats["lang_ok"] += 1
         except Exception:
             continue
-        if REQUIRED_KEYS.issubset(obj) and obj.get("decision") in VALID_DECISIONS \
-                and obj.get("next_step") in VALID_NEXT and obj.get("reason_code") in VALID_REASONS:
-            stats["schema_ok"] += 1
-        if obj.get("reason_code") in VALID_REASONS:
-            stats["no_invented_codes"] += 1
-        if obj.get("reason_code") == gold.get("reason_code"):
-            stats["reason_match"] += 1
-        if obj.get("decision") == gold.get("decision"):
-            stats["decision_match"] += 1
-        if str(obj.get("language")) == str(ex["input"].get("language")):
-            stats["lang_ok"] += 1
     t = max(1, stats["total"])
     return {**stats,
             "json_validity": round(stats["json_valid"] / t, 4),
