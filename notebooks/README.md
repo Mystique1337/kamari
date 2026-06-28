@@ -41,6 +41,10 @@ Tracked source/download URLs live in `data/registry/dataset_sources.yaml`. Direc
 defaults are already present in `.env.example`; request/agreement-only entries stay blank
 until access is approved.
 
+Kaggle datasets can be downloaded either through the Kaggle API credentials or through
+`kagglehub` slugs in `.env.example`; v2 uses `kagglehub` for FAGE, Adience, AgeDB,
+AxonData, LFW, and AgeDB-30.
+
 ## Hand-off
 The final cell prints the HF dataset links. Training reads from `kamari-faces-v0`; nothing
 else is needed to kick off CNN training on Modal.

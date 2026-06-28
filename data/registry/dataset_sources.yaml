@@ -29,16 +29,16 @@ datasets:
     access: open_download
 
   - name: Adience
-    env: ADIENCE_URL
+    env: ADIENCE_KAGGLEHUB_SLUG or ADIENCE_URL
     source_url: https://www.cslab.openu.ac.il/download/
-    download_url: ""
-    access: request_page
+    download_url: kagglehub:alfredhhw/adiencegender
+    access: kagglehub
 
   - name: AgeDB
-    env: AGEDB_URL or AGEDB_HF_REPO
+    env: AGEDB_KAGGLEHUB_SLUG or AGEDB_URL or AGEDB_HF_REPO
     source_url: https://ibug.doc.ic.ac.uk/resources/agedb/
-    download_url: ""
-    access: request
+    download_url: kagglehub:nitingandhi/agedb-database
+    access: kagglehub
 
   - name: FG-NET
     env: FGNET_URL
@@ -61,21 +61,22 @@ datasets:
     access: open_download_large
 
   - name: FAGE_v2
-    env: FAGE_HF_REPO
+    env: FAGE_KAGGLEHUB_SLUG or FAGE_HF_REPO
     source_url: https://arxiv.org/abs/2408.06806
-    download_url: ""
-    access: contact_or_hf
+    download_url: kagglehub:ajewoleolaitan/fage-dataset
+    access: kagglehub
 
   - name: AxonData-10-30
-    env: AXONDATA_URL or AXONDATA_HF_REPO
-    source_url: https://huggingface.co/datasets
-    download_url: ""
-    access: hf_or_url_verify_terms
+    env: AXONDATA_KAGGLEHUB_SLUG or AXONDATA_URL or AXONDATA_HF_REPO
+    source_url: https://www.kaggle.com/datasets/axondata/face-recognition-age-estimation-dataset
+    download_url: kagglehub:axondata/face-recognition-age-estimation-dataset
+    access: kagglehub_verify_terms
 
   - name: LFW
-    env: LFW_URL
+    env: LFW_KAGGLEHUB_SLUG or LFW_URL
     source_url: http://vis-www.cs.umass.edu/lfw/
-    download_url: http://vis-www.cs.umass.edu/lfw/lfw.tgz
+    download_url: kagglehub:jessicali9530/lfw-dataset
+    fallback_url: http://vis-www.cs.umass.edu/lfw/lfw.tgz
     access: open_download
 
   - name: RFW
@@ -87,14 +88,14 @@ datasets:
   - name: BFW
     env: BFW_URL or BFW_HF_REPO
     source_url: https://github.com/visionjo/facerec-bias-bfw
-    download_url: https://www.dropbox.com/scl/fo/i2gj82qewyikts2d55xo5/AK5cY0nmJ7Of-iHmD6eF9E4?rlkey=ebj8bbq0giwk30v75r51vsw75&st=slcmpmbn&dl=1
+    download_url: https://ucee596aa5763d8bdee292b2e070.dl.dropboxusercontent.com/zip_download_get/CmqnobiuwE4K99ZoSRKbOTWkZrgLWG0Ii5Ilot4wq58gFSJHgg-sXbEdOUO5k_YiqeTHUql_jUzlJSHWAg5_nUI5IwhlB_NFnJ4G61BuVxKNxg?_download_id=76762732817384631851984737707286273411468368654141887990702211142&_log_download_success=1&_notify_domain=www.dropbox.com&dl=1
     access: open_download_research
 
   - name: AgeDB-30
-    env: AGEDB_URL or AGEDB_HF_REPO
+    env: AGEDB30_KAGGLEHUB_SLUG
     source_url: https://ibug.doc.ic.ac.uk/resources/agedb/
-    download_url: uses AgeDB
-    access: uses_agedb
+    download_url: kagglehub:yakhyokhuja/agedb-30-calfw-cplfw-lfw-aligned-112x112
+    access: kagglehub
 
   - name: CelebA-Spoof
     env: CELEBA_SPOOF_URL or CELEBA_SPOOF_HF_REPO

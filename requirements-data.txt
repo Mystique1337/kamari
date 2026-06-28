@@ -22,5 +22,6 @@ torch>=2.2
 huggingface_hub>=0.23
 datasets>=2.19
 kaggle>=1.6
+kagglehub>=0.3.12
 # Optional experiment tracking (enabled only if WANDB_API_KEY is set)
 wandb>=0.17
