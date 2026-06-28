@@ -17,6 +17,7 @@ import '@ionic/react/css/flex-utils.css';
 /* Kámárí theme */
 import './theme/variables.css';
 import './theme/kamari.css';
+import './theme/marketing.css';
 
 setupIonicReact({ mode: 'ios' });
 

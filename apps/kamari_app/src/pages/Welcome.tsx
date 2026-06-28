@@ -1,104 +1,287 @@
+import { IonContent, IonPage, IonButton, IonIcon } from '@ionic/react';
 import {
-  IonContent, IonPage, IonButton, IonIcon, IonSelect, IonSelectOption,
-} from '@ionic/react';
-import {
-  arrowForward, codeSlashOutline, eyeOffOutline, globeOutline, flashOutline, languageOutline,
+  arrowForward, eyeOffOutline, globeOutline, flashOutline, shieldCheckmarkOutline,
+  sparklesOutline, logoGithub, copyOutline, checkmarkOutline,
 } from 'ionicons/icons';
+import { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import KamariMark from '../components/KamariMark';
-import { useKamari } from '../lib/state';
-import { LANGUAGES, t } from '../lib/i18n';
+import { apiBase } from '../lib/api';
+
+const BASE = apiBase || 'https://kamari-api.shinzii.tech';
+
+const STATS = [
+  { num: '480,828', lbl: 'face images, cleaned and curated' },
+  { num: '6.03 yrs', lbl: 'mean absolute age error' },
+  { num: '9', lbl: 'languages explained' },
+  { num: '0', lbl: 'images stored, ever' },
+];
+
+const FEATURES = [
+  { icon: eyeOffOutline, title: 'Privacy first', body: 'The selfie is processed once and deleted. We log the decision, never the image.' },
+  { icon: globeOutline, title: 'Built for Africa', body: 'Trained and benchmarked across African faces and skin tones, with fairness slices.' },
+  { icon: flashOutline, title: 'Fast and multilingual', body: 'A decision in a moment, explained in the user\'s language by a fine-tuned Gemma model.' },
+  { icon: shieldCheckmarkOutline, title: 'Safe by design', body: 'Conservative near the limit. Liveness and a guardian flow back up the model.' },
+];
+
+const MAE_BY_SKIN: [string, string][] = [
+  ['Very light', '5.46'], ['Light', '5.72'], ['Intermediate', '5.50'],
+  ['Tan', '5.99'], ['Brown', '6.23'], ['Dark', '6.58'],
+];
+
+const SNIPPETS: Record<string, string> = {
+  curl: `curl -X POST ${BASE}/v1/age/estimate \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -F image=@selfie.jpg -F language=en -F country=NG`,
+  javascript: `const form = new FormData();
+form.append("image", file);            // a File/Blob
+form.append("language", "en");
+const res = await fetch("${BASE}/v1/age/estimate", {
+  method: "POST",
+  headers: { Authorization: "Bearer YOUR_API_KEY" },
+  body: form,
+});
+const { decision, estimated_age } = await res.json();`,
+  python: `import requests
+with open("selfie.jpg", "rb") as image:
+    r = requests.post(
+        "${BASE}/v1/age/estimate",
+        headers={"Authorization": "Bearer YOUR_API_KEY"},
+        files={"image": image},
+        data={"language": "en", "country": "NG"},
+    )
+print(r.json()["decision"], r.json()["estimated_age"])`,
+};
+
+const PLANS = [
+  { name: 'Free', price: '$0', items: ['1,000 checks / mo', '10 req / min', 'Community support'] },
+  { name: 'Growth', price: '$29', items: ['50,000 checks / mo', '60 req / min', 'Email support'] },
+  { name: 'Scale', price: '$199', items: ['500,000 checks / mo', '300 req / min', 'Fairness reports'] },
+];
+
+function scrollTo(id: string) {
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
 
 export default function Welcome() {
   const history = useHistory();
-  const { language, setLanguage } = useKamari();
-  const tr = (k: string) => t(language, k);
-
-  const features = [
-    { icon: eyeOffOutline, title: tr('feat_privacy'), body: tr('feat_privacy_d') },
-    { icon: globeOutline, title: tr('feat_african'), body: tr('feat_african_d') },
-    { icon: flashOutline, title: tr('feat_fast'), body: tr('feat_fast_d') },
-  ];
-  const steps = [tr('how_1'), tr('how_2'), tr('how_3')];
+  const [lang, setLang] = useState<'curl' | 'javascript' | 'python'>('curl');
+  const [copied, setCopied] = useState(false);
+  const copy = () => { navigator.clipboard?.writeText(SNIPPETS[lang]); setCopied(true); setTimeout(() => setCopied(false), 1500); };
 
   return (
     <IonPage>
-      <IonContent fullscreen>
-        {/* Language switch */}
-        <div style={{ position: 'absolute', top: 12, right: 12, zIndex: 5 }}>
-          <IonSelect
-            aria-label="Language"
-            value={language}
-            interface="popover"
-            onIonChange={(e) => setLanguage(e.detail.value)}
-            style={{ color: 'var(--kamari-cream)', maxWidth: 150 }}
-          >
-            {LANGUAGES.map((l) => (
-              <IonSelectOption key={l.code} value={l.code}>{l.native}</IonSelectOption>
-            ))}
-          </IonSelect>
-        </div>
+      <IonContent fullscreen className="mkt kamari-bg">
+        {/* Nav */}
+        <nav className="mkt-nav">
+          <span className="brand">Kámárí</span>
+          <button className="link hide-sm" onClick={() => scrollTo('how')}>How it works</button>
+          <button className="link hide-sm" onClick={() => scrollTo('data')}>Benchmarks</button>
+          <button className="link hide-sm" onClick={() => history.push('/docs')}>Docs</button>
+          <button className="link hide-sm" onClick={() => history.push('/pricing')}>Pricing</button>
+          <button className="link hide-sm" onClick={() => scrollTo('about')}>About</button>
+          <span className="spacer" />
+          <button className="link" onClick={() => history.push('/login')}>Developers</button>
+          <IonButton size="small" className="kamari-btn" color="secondary" onClick={() => history.push('/consent')}>Try it out</IonButton>
+        </nav>
 
-        <div className="kamari-hero kamari-pattern" style={{ minHeight: '58vh', padding: '28px' }}>
-          <div style={{ paddingTop: 36, display: 'flex', justifyContent: 'center' }}>
-            <KamariMark size={88} tone="gold" />
-          </div>
-          <div className="kamari-center" style={{ marginTop: 22 }}>
-            <p className="kamari-eyebrow"><IonIcon icon={languageOutline} /> African age verification</p>
-            <h1 style={{ fontSize: '3rem', margin: '8px 0 0', color: 'var(--kamari-cream)' }}>Kámárí</h1>
-            <p style={{ maxWidth: 340, margin: '14px auto 0', color: 'rgba(246,239,226,.88)', lineHeight: 1.55 }}>
-              {tr('tagline')}
-            </p>
-            <span className="kamari-badge on-dark" style={{ marginTop: 16 }}>📷 {tr('photo_never_stored')}</span>
-          </div>
-        </div>
-
-        <div className="kamari-pad kamari-stack">
-          <div className="kamari-kente" />
-          <IonButton expand="block" className="kamari-btn" color="secondary" onClick={() => history.push('/consent')}>
-            {tr('verify_cta')}
-            <IonIcon slot="end" icon={arrowForward} />
-          </IonButton>
-
-          {/* How it works */}
-          <h2 style={{ margin: '12px 4px 0' }}>{tr('how_title')}</h2>
-          <div className="kamari-stack">
-            {steps.map((s, i) => (
-              <div key={i} className="kamari-card" style={{ padding: 16, display: 'flex', gap: 14, alignItems: 'center' }}>
-                <div style={{
-                  width: 34, height: 34, flexShrink: 0, borderRadius: '50%', display: 'grid', placeItems: 'center',
-                  background: 'var(--kamari-gold)', color: 'var(--kamari-indigo-deep)', fontWeight: 700,
-                }}>{i + 1}</div>
-                <span style={{ fontSize: '.95rem' }}>{s}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Feature cards */}
-          <div className="kamari-stack" style={{ marginTop: 6 }}>
-            {features.map((f) => (
-              <div key={f.title} className="kamari-card" style={{ padding: 18, display: 'flex', gap: 14 }}>
-                <IonIcon icon={f.icon} style={{ fontSize: 26, color: 'var(--kamari-indigo)', flexShrink: 0 }} />
-                <div>
-                  <strong>{f.title}</strong>
-                  <p className="kamari-muted" style={{ margin: '4px 0 0', fontSize: '.9rem' }}>{f.body}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <IonButton expand="block" fill="outline" color="primary" onClick={() => history.push('/login')}>
-            <IonIcon slot="start" icon={codeSlashOutline} />
-            {tr('for_developers')}
-          </IonButton>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <IonButton fill="clear" size="small" color="medium" style={{ flex: 1 }} onClick={() => history.push('/docs')}>{tr('docs')}</IonButton>
-            <IonButton fill="clear" size="small" color="medium" style={{ flex: 1 }} onClick={() => history.push('/pricing')}>{tr('pricing')}</IonButton>
-          </div>
-          <p className="kamari-muted kamari-center" style={{ fontSize: '.76rem' }}>
-            {tr('estimate_note')} Open source under Apache 2.0.
+        {/* Hero */}
+        <section className="mkt-wrap mkt-hero">
+          <div style={{ display: 'flex', justifyContent: 'center' }}><KamariMark size={76} tone="indigo" /></div>
+          <p className="kamari-eyebrow" style={{ color: 'var(--kamari-terracotta)' }}>African-built age verification</p>
+          <h1>Prove age with a selfie.<br />Privacy kept, not your photo.</h1>
+          <p className="sub">
+            Kámárí estimates age from a single selfie, returns a calibrated decision, and explains it
+            in the user's language. Tuned for African faces. Open source, with a managed API.
           </p>
-        </div>
+          <div className="mkt-cta">
+            <IonButton className="kamari-btn" color="secondary" onClick={() => history.push('/consent')}>
+              Try it out <IonIcon slot="end" icon={arrowForward} />
+            </IonButton>
+            <IonButton fill="outline" color="primary" onClick={() => history.push('/docs')}>Read the docs</IonButton>
+          </div>
+        </section>
+
+        {/* Stats */}
+        <section className="mkt-wrap">
+          <div className="mkt-grid">
+            {STATS.map((s) => (
+              <div key={s.lbl} className="kamari-card mkt-stat">
+                <div className="num">{s.num}</div>
+                <div className="lbl">{s.lbl}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* How it works */}
+        <section id="how" className="mkt-section">
+          <div className="mkt-wrap">
+            <h2 className="mkt-h2">How it works</h2>
+            <p className="mkt-lead">A small CNN makes the age signal, a policy engine decides, and a fine-tuned Gemma model writes the message. The image never leaves the moment.</p>
+            <div className="mkt-grid-3" style={{ marginTop: 22 }}>
+              {[['1', 'Capture', 'The user takes a selfie. We detect and crop the face on the fly.'],
+                ['2', 'Estimate', 'The model returns an age, an under-18 probability, and an uncertainty.'],
+                ['3', 'Decide', 'A conservative policy returns allow, secondary check, block, or recapture, with a clear message.']].map(([n, t, d]) => (
+                <div key={n} className="kamari-card kamari-pad">
+                  <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'var(--kamari-gold)', color: 'var(--kamari-indigo-deep)', display: 'grid', placeItems: 'center', fontWeight: 700 }}>{n}</div>
+                  <h3 style={{ margin: '10px 0 4px' }}>{t}</h3>
+                  <p className="kamari-muted" style={{ margin: 0, fontSize: '.92rem' }}>{d}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Features */}
+        <section className="mkt-section alt">
+          <div className="mkt-wrap">
+            <h2 className="mkt-h2">Why Kámárí</h2>
+            <div className="mkt-grid" style={{ marginTop: 22 }}>
+              {FEATURES.map((f) => (
+                <div key={f.title} className="kamari-card kamari-pad">
+                  <IonIcon icon={f.icon} style={{ fontSize: 26, color: 'var(--kamari-indigo)' }} />
+                  <h3 style={{ margin: '8px 0 4px' }}>{f.title}</h3>
+                  <p className="kamari-muted" style={{ margin: 0, fontSize: '.92rem' }}>{f.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Data & benchmarks */}
+        <section id="data" className="mkt-section">
+          <div className="mkt-wrap">
+            <h2 className="mkt-h2">Data, benchmarks, and evaluation</h2>
+            <p className="mkt-lead">
+              Built from open, license-checked face datasets with an auto label-quality gate, MTCNN
+              face crops, skin-tone banding, and a leakage-free split. We report fairness and the
+              critical 13 to 21 boundary, not just an average.
+            </p>
+
+            <div className="mkt-grid" style={{ marginTop: 22 }}>
+              {[['825,129', 'images gathered'], ['480,828', 'kept after cleaning'],
+                ['24,753', 'exact-age training rows'], ['10,182', 'African-signal rows'],
+                ['3,139', 'in the 13 to 21 boundary'], ['8,322', 'held-out benchmark']].map(([n, l]) => (
+                <div key={l} className="kamari-card mkt-stat"><div className="num">{n}</div><div className="lbl">{l}</div></div>
+              ))}
+            </div>
+
+            <div className="mkt-grid-3" style={{ marginTop: 24, alignItems: 'start' }}>
+              <div className="kamari-card kamari-pad">
+                <h3 style={{ marginTop: 0 }}>Accuracy</h3>
+                <table className="mkt-table">
+                  <tbody>
+                    <tr><td>MAE</td><td><strong>6.03 yrs</strong></td></tr>
+                    <tr><td>MPTR@18</td><td>0.317</td></tr>
+                    <tr><td>MPTR@18, dark + brown</td><td>0.383</td></tr>
+                    <tr><td>Adults wrongly blocked</td><td>1%</td></tr>
+                    <tr><td>Model inference</td><td>~14 ms</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className="kamari-card kamari-pad">
+                <h3 style={{ marginTop: 0 }}>MAE by skin band</h3>
+                <table className="mkt-table">
+                  <tbody>{MAE_BY_SKIN.map(([b, v]) => (<tr key={b}><td>{b}</td><td>{v} yrs</td></tr>))}</tbody>
+                </table>
+              </div>
+              <div className="kamari-card kamari-pad">
+                <h3 style={{ marginTop: 0 }}>How we evaluate</h3>
+                <p className="kamari-muted" style={{ fontSize: '.92rem', lineHeight: 1.6 }}>
+                  The headline metric is <strong>Minor-Pass-Through Rate</strong>, the share of true
+                  minors passed as adults, reported overall, at 21, and for dark and brown skin. The
+                  CNN is a signal, not a standalone gate: the policy engine, liveness, and guardian
+                  flow provide the safety margin.
+                </p>
+                <a href="https://github.com/Mystique1337/kamari/blob/main/docs/methodology.md" target="_blank" rel="noreferrer" style={{ color: 'var(--kamari-indigo)', fontWeight: 600, fontSize: '.9rem' }}>Read the methodology</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Code */}
+        <section className="mkt-section alt">
+          <div className="mkt-wrap">
+            <h2 className="mkt-h2">One request to verify age</h2>
+            <p className="mkt-lead">Create a key in the developer area, then call the API from anywhere.</p>
+            <div style={{ marginTop: 18 }}>
+              <div className="mkt-tabs">
+                {(['curl', 'javascript', 'python'] as const).map((l) => (
+                  <button key={l} className={`mkt-tab ${lang === l ? 'active' : ''}`} onClick={() => setLang(l)}>{l}</button>
+                ))}
+                <span style={{ flex: 1 }} />
+                <button className="mkt-tab" onClick={copy}><IonIcon icon={copied ? checkmarkOutline : copyOutline} /> {copied ? 'Copied' : 'Copy'}</button>
+              </div>
+              <pre className="mkt-code"><code>{SNIPPETS[lang]}</code></pre>
+            </div>
+          </div>
+        </section>
+
+        {/* Pricing teaser */}
+        <section className="mkt-section">
+          <div className="mkt-wrap">
+            <h2 className="mkt-h2">Pricing</h2>
+            <p className="mkt-lead">Pay for the volume you verify. Self-host it free under Apache 2.0, or use the managed API.</p>
+            <div className="mkt-grid-3" style={{ marginTop: 22 }}>
+              {PLANS.map((p) => (
+                <div key={p.name} className="kamari-card kamari-pad">
+                  <strong style={{ fontSize: '1.1rem' }}>{p.name}</strong>
+                  <div style={{ fontFamily: 'var(--kamari-font-display)', fontSize: '2rem', margin: '6px 0' }}>{p.price}{p.price !== '$0' && <span style={{ fontSize: '.85rem', color: 'var(--kamari-ink-soft)' }}> /mo</span>}</div>
+                  {p.items.map((it) => (
+                    <div key={it} style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: '.9rem', margin: '4px 0' }}>
+                      <IonIcon icon={checkmarkOutline} style={{ color: 'var(--kamari-green)' }} /> {it}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+            <div style={{ marginTop: 16 }}>
+              <IonButton fill="outline" color="primary" onClick={() => history.push('/pricing')}>
+                <IonIcon slot="start" icon={sparklesOutline} /> See full pricing
+              </IonButton>
+            </div>
+          </div>
+        </section>
+
+        {/* About */}
+        <section id="about" className="mkt-section alt">
+          <div className="mkt-wrap">
+            <h2 className="mkt-h2">About us</h2>
+            <p className="mkt-lead">
+              Kámárí is a small African team building age assurance that respects people. Age checks
+              should not mean surrendering your face to a database. We keep the decision, never the
+              image, and we test for fairness across skin tones because most age models are not built
+              or measured here.
+            </p>
+            <div className="mkt-grid-3" style={{ marginTop: 22 }}>
+              <div className="kamari-card kamari-pad">
+                <strong>Chidi Ashinze</strong>
+                <p className="kamari-muted" style={{ margin: '4px 0 0', fontSize: '.9rem' }}>Founder. Builds the models, API, and app.</p>
+              </div>
+              <div className="kamari-card kamari-pad">
+                <strong>Open to collaborators</strong>
+                <p className="kamari-muted" style={{ margin: '4px 0 0', fontSize: '.9rem' }}>ML, data, and African-language reviewers. Reach out.</p>
+              </div>
+              <div className="kamari-card kamari-pad">
+                <strong>Contact</strong>
+                <p className="kamari-muted" style={{ margin: '4px 0 0', fontSize: '.9rem' }}>team@catalyzu.io</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="mkt-footer">
+          <div className="mkt-wrap" style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+            <span className="brand" style={{ fontFamily: 'var(--kamari-font-display)', fontWeight: 700 }}>Kámárí</span>
+            <span className="spacer" style={{ flex: 1 }} />
+            <a href="https://github.com/Mystique1337/kamari" target="_blank" rel="noreferrer"><IonIcon icon={logoGithub} /> GitHub</a>
+            <button className="link" onClick={() => history.push('/docs')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}>Docs</button>
+            <button className="link" onClick={() => history.push('/pricing')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}>Pricing</button>
+            <span>Apache-2.0. An estimate, not a legal determination.</span>
+          </div>
+        </footer>
       </IonContent>
     </IonPage>
   );
