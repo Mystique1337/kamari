@@ -22,6 +22,18 @@ Installed into `~/.codex/skills` from the curated `openai/skills` repository:
 | `security-threat-model` | Threat-model biometric age-gating, 1:1 verification, liveness checks, and minor-data handling. |
 | `security-ownership-map` | Track ownership boundaries for app, API, ML services, data, infra, and operations. |
 
+## Already Available Without User-Level Install
+
+These skills or plugin-provided workflows were already available in this Codex session, so they were not installed again into `~/.codex/skills`:
+
+- `openai-docs`
+- `imagegen`
+- `skill-installer`
+- `skill-creator`
+- Google Drive, Docs, Sheets, and Slides skills from the Google Drive plugin
+- Notion research, meeting, knowledge-capture, and spec-to-implementation skills from the Notion plugin
+- Slack summarization, digest, triage, reply, and outgoing-message skills from the Slack plugin
+
 ## Skill Areas From The Master Plan
 
 These are the main engineering skill areas required by the plan:
