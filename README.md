@@ -35,14 +35,27 @@ No raw face images or embeddings stored by default · metadata + audit logs only
 - Branches: `main` (prod) · `staging` · `feature/*` · `model/*`.
 
 ## Status
-- ✅ Phase 0 — monorepo scaffold, skills tooling, planning docs.
-- ✅ Data pipeline — registry + manifest schema + Colab notebooks (`notebooks/01–04`, single HF upload step). *Run on Colab.*
+- ✅ Data pipeline — single Colab notebook (`notebooks/kamari_data_pipeline_v3_new_fast.ipynb`): gather → auto label-quality gate → preprocess → EDA → HF. *Run on Colab.*
 - ✅ App MVP — `apps/kamari_app` (Ionic React + Capacitor + PWA), African design system, full Welcome→Consent→Camera→Result flow on a mock-to-live API seam.
-- ⏳ Next — Modal CNN + Gemma train/serve scripts; FastAPI gateway; wire live endpoints.
+- ✅ API gateway — `apps/api` (FastAPI): policy engine, fastapi-users JWT auth over Postgres+pgvector, Modal clients, mock-to-live.
+- ✅ **CNN trained** — `tf_efficientnetv2_s`, 30 epochs, **MAE 6.03** (held-out). ONNX for CPU serving.
+- ⏳ **Gemma 4 (E4B) fine-tune** — in progress on Modal H200.
+
+### Trained artifacts (Hugging Face, namespace `Shinzmann`)
+| Artifact | Repo |
+|---|---|
+| CNN age model (ONNX + weights + reports) | [`Shinzmann/cnn-age-v0`](https://huggingface.co/Shinzmann/cnn-age-v0) |
+| Gemma 4 explanation LoRA | [`Shinzmann/gemma-explain-lora-v0`](https://huggingface.co/Shinzmann/gemma-explain-lora-v0) |
+| Training faces (private) | `Shinzmann/kamari-faces-v0` |
+| Dataset registry / provenance | `Shinzmann/dataset-registry-v0` |
+| Benchmark (Kámárí-Safe Open v0) | `Shinzmann/kamari-safe-open-v0` |
+| Gemma SFT set | `Shinzmann/gemma-sft-v0` |
 
 ### Where things run
 | Workstream | Runs on |
 |---|---|
 | Data gather/clean/EDA/upload | Google Colab → Hugging Face |
-| CNN + Gemma training/serving | Modal (GPU) |
+| CNN + Gemma **training** | Modal (H200) |
+| **CNN serving** | **CPU** (ONNX, ~14 ms) |
+| **Gemma serving** | **GPU** (4B; CPU/q4-GGUF optional) |
 | App + API gateway | Local / Railway |
