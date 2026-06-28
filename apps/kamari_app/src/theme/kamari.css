@@ -52,11 +52,13 @@ ion-content.kamari-bg {
 
 /* Cards */
 .kamari-card {
-  background: #fff;
+  background: var(--ion-card-background, #fff);
   border-radius: var(--kamari-radius);
   box-shadow: var(--kamari-shadow);
-  border: 1px solid rgba(33, 58, 107, 0.06);
+  border: 1px solid var(--kamari-card-border);
 }
+
+ion-content.kamari-bg { --background: var(--ion-background-color); }
 
 /* Pill buttons */
 ion-button.kamari-btn {

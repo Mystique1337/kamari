@@ -72,6 +72,9 @@ export interface UsageSummary {
 export interface UsageLog {
   request_id: string; endpoint: string; decision: string;
   reason_code: string; estimated_age: number | null; created_at: string;
+  p_under_18?: number | null; uncertainty?: number | null;
+  face_quality?: number | null; model_version?: string | null;
+  retention_policy?: string | null;
 }
 
 export async function usageSummary(token: string): Promise<UsageSummary> {

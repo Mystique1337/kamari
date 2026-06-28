@@ -55,4 +55,23 @@
   --kamari-radius: 18px;
   --kamari-radius-lg: 28px;
   --kamari-shadow: 0 14px 40px -18px rgba(20, 33, 61, 0.45);
+  --kamari-card-border: rgba(33, 58, 107, 0.06);
+}
+
+/* --- Dark mode (system preference) --- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --kamari-cream:   #131d33;   /* dark surface stands in for the cream background */
+    --kamari-cream-2: #1b2742;
+    --kamari-ink:     #F3ECDD;   /* light text */
+    --kamari-ink-soft:#A9A294;
+
+    --ion-background-color: #0e1628;
+    --ion-background-color-rgb: 14, 22, 40;
+    --ion-text-color: #F3ECDD;
+    --ion-text-color-rgb: 243, 236, 221;
+    --ion-card-background: #17213b;
+    --kamari-card-border: rgba(232, 184, 75, 0.14);
+    --kamari-shadow: 0 14px 40px -18px rgba(0, 0, 0, 0.6);
+  }
 }
