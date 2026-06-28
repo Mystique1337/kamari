@@ -1,4 +1,4 @@
--- Kámárí — minimal schema in the PUBLIC schema (already exposed to PostgREST).
+-- Kámárí - minimal schema in the PUBLIC schema (already exposed to PostgREST).
 -- Use this when you don't want to reconfigure PostgREST's db-schemas list.
 -- Paste into the self-hosted Supabase SQL editor and Run.
 --
@@ -29,7 +29,7 @@ create table if not exists public.api_keys (
 );
 create index if not exists api_keys_org_idx on public.api_keys(organization_id);
 
--- Inference log (metadata only — NO raw images) ------------------------------
+-- Inference log (metadata only - NO raw images) ------------------------------
 create table if not exists public.inference_requests (
   id            uuid primary key default gen_random_uuid(),
   request_id    text not null unique,
@@ -49,5 +49,5 @@ create table if not exists public.inference_requests (
 );
 create index if not exists inf_org_time_idx on public.inference_requests(organization_id, created_at desc);
 
--- Grants — service_role (gateway) full access; public schema is already exposed.
+-- Grants - service_role (gateway) full access; public schema is already exposed.
 grant all on public.organizations, public.api_keys, public.inference_requests to service_role;

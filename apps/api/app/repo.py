@@ -1,7 +1,7 @@
-"""DB ops via Supabase REST (PostgREST) against the `kamari` schema.
+"""DB ops via Supabase REST (PostgREST) against the configured schema (default `public`).
 
 Best-effort: a logging failure must never break an age check. No-ops when Supabase
-isn't configured. Requires `kamari` to be exposed in PostgREST (db-schemas).
+isn't configured. See infra/postgres/schema_public.sql for the tables.
 """
 import asyncio
 import hashlib

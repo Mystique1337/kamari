@@ -1,6 +1,6 @@
 """Canonical Kámárí manifest schema (master plan §6.3).
 
-Every image — from every dataset — becomes exactly one manifest row with these
+Every image - from every dataset - becomes exactly one manifest row with these
 columns. We never train from loose folders; the manifest is the single source of truth
 for what is trainable, evaluable, and redistributable.
 """

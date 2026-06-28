@@ -1,4 +1,4 @@
-# Kámárí data pipeline (notebooks 01–04) — local / Colab
+# Kámárí data pipeline (notebooks 01-04) - local / Colab
 # Install with: pip install -r requirements-data.txt
 numpy>=1.26
 pandas>=2.2

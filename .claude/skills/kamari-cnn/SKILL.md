@@ -3,7 +3,7 @@ name: kamari-cnn
 description: Train, calibrate, export, and benchmark the Kámárí small CNN age-gating model in training/cnn. Use for PyTorch model design, augmentation, calibration, ONNX/TFLite export, and Modal serving of the age estimator.
 ---
 
-# Kámárí CNN — small age-gating model
+# Kámárí CNN - small age-gating model
 
 The CNN is the **biometric age estimator** (not Gemma). Fast, calibratable, exportable, on-device-capable later.
 
@@ -16,7 +16,7 @@ The CNN is the **biometric age estimator** (not Gemma). Fast, calibratable, expo
 Outputs per inference: `estimated_age, age_distribution, age_band, p_under_18, uncertainty, face_quality?`.
 
 ## Training order (§8.3)
-1. Exact-age datasets → 2. add bracketed (auxiliary only) → 3. **oversample ages 13–21** → 4. add African-domain → 5. eval on frozen Kámárí-Safe Open v0 → 6. calibrate thresholds → 7. export ONNX/TFLite → 8. register in Supabase `model_versions` → 9. publish HF model card.
+1. Exact-age datasets → 2. add bracketed (auxiliary only) → 3. **oversample ages 13-21** → 4. add African-domain → 5. eval on frozen Kámárí-Safe Open v0 → 6. calibrate thresholds → 7. export ONNX/TFLite → 8. register in Supabase `model_versions` → 9. publish HF model card.
 
 ## Augmentation discipline (§8.4)
 ALLOWED: flip, small rotation, small crop/scale, brightness/contrast/gamma, low light, motion/defocus blur, Gaussian noise, JPEG compression, up/downscale.
@@ -33,7 +33,7 @@ python benchmarks/age_gate/run_age_benchmark.py --model outputs/cnn/cnn_v0.onnx 
 
 ## Rules
 - Face detect + align (MTCNN/RetinaFace/MediaPipe) before the crop; reject low-quality faces.
-- Calibration is mandatory before release — uncertainty must be trustworthy near the 18 boundary.
+- Calibration is mandatory before release - uncertainty must be trustworthy near the 18 boundary.
 - A model cannot ship without the §7.6 release bundle (frozen manifest, run ID, version ID, thresholds, subgroup report, latency report, known-limitations, release decision).
 
 ## Acceptance (§8.6): best.pt, cnn_v0.onnx, cnn_v0.tflite, thresholds_v0.json, benchmark_age_report_v0.md, latency_report_v0.md, MODEL_CARD_CNN.md, Supabase model_versions row, HF artifact.

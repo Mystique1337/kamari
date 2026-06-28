@@ -10,7 +10,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'icons/kamari.svg'],
       manifest: {
-        name: 'Kámárí — Age Verification',
+        name: 'Kámárí - Age Verification',
         short_name: 'Kámárí',
         description: 'African-focused, privacy-first age verification.',
         theme_color: '#213A6B',

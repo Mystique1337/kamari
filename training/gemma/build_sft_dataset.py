@@ -1,4 +1,4 @@
-"""Build the Gemma SFT dataset from the policy engine — NOT from raw child faces.
+"""Build the Gemma SFT dataset from the policy engine - NOT from raw child faces.
 
 Generates strict-JSON instruction/input/output rows by sampling CNN-style signals,
 running the same decision rules as the gateway, and rendering approved explanation
@@ -46,13 +46,13 @@ USER_MSG = {
         "ar": "لا يمكننا تأكيد عمرك. يلزم تحقق من ولي الأمر.",
     },
     "RECAPTURE_LOW_QUALITY": {
-        "en": "The photo was unclear — let’s try once more in better light.",
-        "sw": "Picha haikuwa wazi — jaribu tena kwenye mwanga bora.",
-        "yo": "Àwòrán náà kò ṣe kedere — jọ̀wọ́ tún gbìyànjú nínú ìmọ́lẹ̀ tó dára.",
-        "ha": "Hoton bai bayyana ba — gwada sake a cikin haske mai kyau.",
-        "am": "ፎቶው ግልጽ አልነበረም — እባክዎ በተሻለ ብርሃን እንደገና ይሞክሩ።",
-        "fr": "La photo n’était pas nette — réessayons avec une meilleure lumière.",
-        "ar": "الصورة لم تكن واضحة — لنحاول مرة أخرى في إضاءة أفضل.",
+        "en": "The photo was unclear - let’s try once more in better light.",
+        "sw": "Picha haikuwa wazi - jaribu tena kwenye mwanga bora.",
+        "yo": "Àwòrán náà kò ṣe kedere - jọ̀wọ́ tún gbìyànjú nínú ìmọ́lẹ̀ tó dára.",
+        "ha": "Hoton bai bayyana ba - gwada sake a cikin haske mai kyau.",
+        "am": "ፎቶው ግልጽ አልነበረም - እባክዎ በተሻለ ብርሃን እንደገና ይሞክሩ።",
+        "fr": "La photo n’était pas nette - réessayons avec une meilleure lumière.",
+        "ar": "الصورة لم تكن واضحة - لنحاول مرة أخرى في إضاءة أفضل.",
     },
 }
 USER_MSG["SECONDARY_CHECK_LOW_CONFIDENCE"] = USER_MSG["SECONDARY_CHECK_NEAR_THRESHOLD"]

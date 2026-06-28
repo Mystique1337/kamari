@@ -5,16 +5,16 @@ description: Build the Kámárí dataset registry, adapters, manifests, and the 
 
 # Kámárí Data + Benchmark
 
-The benchmark is the **evidence** that Kámárí is safe for African users near the under-18 boundary — treat it as a first-class deliverable, not a side task.
+The benchmark is the **evidence** that Kámárí is safe for African users near the under-18 boundary - treat it as a first-class deliverable, not a side task.
 
-## Dataset governance (§6) — legally sensitive, do not shortcut
+## Dataset governance (§6) - legally sensitive, do not shortcut
 Classify every dataset as `train | auxiliary | benchmark | agreement_only | exclude` in `data/registry/datasets_free_open.yaml`.
 - Exact-age training: UTKFace, APPA-REAL, AgeDB, FG-NET, All-Age-Faces, filtered IMDB-WIKI, AxonData (only if licence/consent allow).
 - African signal: FAGE_v2 (resolvable age), FairFace Black subset. Agreement-only (CASIA-Face-Africa, BVC-UNN, NEFI) are excluded from v0 unless access approved.
 - Verification benchmark: RFW African subset, BFW, LFW, AgeDB pairs. Liveness: CelebA-Spoof (+ OULU-NPU/Replay/SiW only if terms allow).
 - **EXCLUDE:** MS-Celeb-1M & derivatives; commercial child datasets without licence+DPA+parental consent+ethics approval; bracket labels used as exact 18-truth; synthetic children as benchmark truth.
 
-## Manifest (§6.3) — one standard row per image, never train from loose folders
+## Manifest (§6.3) - one standard row per image, never train from loose folders
 `image_id, path, dataset, split, subject_id, age, age_exact, age_band, is_minor, gender, race_hint, country, skin_ita, skin_band, face_quality, bbox, license, consent_basis, source_url, source_hash, usable_for_age, usable_for_verification, usable_for_liveness, train_ok, eval_ok, synthetic, created_at`. Store as Parquet (pandas/pyarrow).
 
 ## Benchmark: "Kámárí-Safe Open v0" (§7)

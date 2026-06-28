@@ -3,14 +3,14 @@ name: kamari-gemma
 description: Build the Gemma explanation/policy layer in training/gemma and services/modal_gemma. Use for LoRA/QLoRA fine-tuning, SFT dataset construction, strict-JSON schema output, multilingual eval, and Modal serving. Gemma explains decisions; it never estimates age.
 ---
 
-# Kámárí Gemma — explanation & policy layer
+# Kámárí Gemma - explanation & policy layer
 
 Gemma turns CNN + policy outputs into safe, consistent, multilingual explanations. It is **not** the age estimator and must **not** invent decision codes.
 
 ## Strategy (§9)
 - Model: Gemma small/efficient variant (E2B/E4B for prod; 12B for GPU demo). LoRA/QLoRA, never full fine-tune.
 - JSON-schema-constrained output. Modal endpoint for inference.
-- Fine-tune on **structured decision examples** (CNN output + threshold policy + country/language + reason codes + approved templates + edge cases) — not raw child faces.
+- Fine-tune on **structured decision examples** (CNN output + threshold policy + country/language + reason codes + approved templates + edge cases) - not raw child faces.
 
 ## I/O contract
 Input: `estimated_age, p_under_18, uncertainty, face_quality, country, legal_threshold, challenge_threshold, language, policy_context`.

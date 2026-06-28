@@ -1,6 +1,6 @@
 ---
 name: kamari-frontend
-description: Build and modify the Kámárí web/PWA/mobile client. Use for any work in apps/kamari_app — Ionic React + TypeScript + Capacitor + Vite PWA, camera capture, consent/result screens, API client, i18n.
+description: Build and modify the Kámárí web/PWA/mobile client. Use for any work in apps/kamari_app - Ionic React + TypeScript + Capacitor + Vite PWA, camera capture, consent/result screens, API client, i18n.
 ---
 
 # Kámárí Frontend (Ionic React + Capacitor + PWA)
@@ -25,15 +25,15 @@ Welcome → Consent/privacy → CameraCapture → AgeResult → DeveloperDashboa
 - **Camera**: browser `getUserMedia` for web/PWA; `@capacitor/camera` on native. Abstract behind `lib/camera.ts`.
 - **API**: all calls go through `lib/api.ts` to the Railway gateway; validate every response with `zod` against the `/v1/age/estimate` contract (§20). Always surface `request_id`, `model_version`, and `retention`.
 - **Result screen** must handle all decisions: `allow / block / secondary_check / recapture`.
-- **Privacy copy is mandatory** on consent + result screens — show retention (`image_not_stored` by default).
+- **Privacy copy is mandatory** on consent + result screens - show retention (`image_not_stored` by default).
 - **Tokens** stored via `@capacitor/preferences` on native (never localStorage on native).
-- **i18n** (later): en, sw, yo, ha, am, fr, ar — Arabic needs RTL handling.
+- **i18n** (later): en, sw, yo, ha, am, fr, ar - Arabic needs RTL handling.
 
 ## Build / sync
 ```bash
 npm run build && npx cap sync
 npx cap open android   # Android Studio
-npx cap open ios       # Xcode (macOS only — required for App Store)
+npx cap open ios       # Xcode (macOS only - required for App Store)
 ```
 
 ## Acceptance (§11.8): web build, PWA install, Android build, iOS project, camera, consent screen, age-endpoint integration, all decision states, API-key dashboard, visible privacy copy.

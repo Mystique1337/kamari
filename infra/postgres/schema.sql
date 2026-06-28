@@ -1,4 +1,4 @@
--- Kámárí database schema — designed to live in a dedicated sub-schema `kamari`
+-- Kámárí database schema - designed to live in a dedicated sub-schema `kamari`
 -- inside an existing (self-hosted) Postgres instance with pgvector. Supabase is no longer required.
 --
 -- Apply:
@@ -109,7 +109,7 @@ create table if not exists kamari.face_embeddings (
   created_at   timestamptz not null default now()
 );
 -- Index supports fast distance math, but queries MUST be scoped to subject_ref:
--- Kámárí does 1:1 verification only — never 1:N face search.
+-- Kámárí does 1:1 verification only - never 1:N face search.
 create index if not exists face_emb_idx on kamari.face_embeddings
   using ivfflat (embedding vector_cosine_ops) with (lists = 100);
 
@@ -165,7 +165,7 @@ alter table kamari.audit_events       enable row level security;
 -- create policy org_isolation on kamari.inference_requests
 --   using (organization_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id');
 
--- PostgREST/REST access — let the Supabase roles reach the kamari schema.
+-- PostgREST/REST access - let the Supabase roles reach the kamari schema.
 grant usage on schema kamari to anon, authenticated, service_role;
 grant all on all tables in schema kamari to service_role;
 grant all on all sequences in schema kamari to service_role;

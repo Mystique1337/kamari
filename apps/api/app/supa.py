@@ -1,7 +1,7 @@
-"""Supabase client (service role) for REST data ops against the kamari schema.
+"""Supabase client (service role) for REST data ops.
 
-Returns None when Supabase isn't configured, so the gateway runs standalone.
-Requires the `kamari` schema to be exposed in PostgREST (db-schemas).
+Targets the schema in SUPABASE_DB_SCHEMA (default `public`, which PostgREST exposes out of
+the box). Returns None when Supabase isn't configured, so the gateway runs standalone.
 """
 from functools import lru_cache
 

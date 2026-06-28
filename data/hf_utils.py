@@ -29,7 +29,7 @@ def _retry(fn, *args, _tries: int = 6, _what: str = "HF op", **kwargs):
     for i in range(_tries):
         try:
             return fn(*args, **kwargs)
-        except Exception as e:  # noqa: BLE001 — HfHubHTTPError, httpx timeouts, etc.
+        except Exception as e:  # noqa: BLE001 - HfHubHTTPError, httpx timeouts, etc.
             last = e
             msg = str(e)
             transient = any(s in msg for s in ("504", "502", "503", "500", "Time-out",
@@ -47,7 +47,7 @@ class HF:
         self.token = token or os.environ.get("HF_TOKEN")
         self.namespace = namespace or os.environ.get("HF_NAMESPACE", "kamari")
         if not self.token:
-            raise RuntimeError("HF_TOKEN not set — add it to .env or the environment.")
+            raise RuntimeError("HF_TOKEN not set - add it to .env or the environment.")
         from huggingface_hub import HfApi
         self.api = HfApi(token=self.token)
 
@@ -106,7 +106,7 @@ tags: [kamari, age-estimation, african, fairness, face]
 # Kámárí Dataset Registry v0
 
 Provenance + manifest for the Kámárí age-gating system. **No raw face images are
-redistributed here** unless a source licence explicitly allows it — this repo holds
+redistributed here** unless a source licence explicitly allows it - this repo holds
 manifests (paths, hashes, labels, licence/consent), dataset cards, and reports.
 
 - Rows: **{n_rows}**

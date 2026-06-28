@@ -1,4 +1,4 @@
-# Kámárí dataset registry — free/open & free-for-research only.
+# Kámárí dataset registry - free/open & free-for-research only.
 # role: train | auxiliary | benchmark | agreement_only | exclude
 # access: open_download | kaggle | hf | request | agreement
 # Every dataset MUST be classified before any image enters the manifest.
@@ -77,7 +77,7 @@ datasets:
     consent_basis: verify dataset terms before use
     usable_for: [age]
     region_signal: mixed
-    notes: 10–30 boundary research sample. Include only if licence + consent terms accepted.
+    notes: 10-30 boundary research sample. Include only if licence + consent terms accepted.
 
   # ---------- B. African-domain signal ----------
   - name: FAGE_v2

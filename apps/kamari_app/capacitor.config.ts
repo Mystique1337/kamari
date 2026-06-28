@@ -7,7 +7,7 @@ const config: CapacitorConfig = {
   server: { androidScheme: 'https' },
   plugins: {
     Camera: {
-      // Front camera, no gallery — this is a live selfie age check.
+      // Front camera, no gallery - this is a live selfie age check.
     },
   },
 };

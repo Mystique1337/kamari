@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     supabase_url: str = ""
     supabase_service_role_key: str = ""
     database_url: str = ""
-    supabase_db_schema: str = "kamari"
+    supabase_db_schema: str = "public"
 
     # Security
     api_key_pepper: str = "dev-pepper-change-me"
@@ -46,7 +46,7 @@ class Settings(BaseSettings):
     email_from_name: str = "Kamari"
 
     # Public app URL (Railway) - used to build links inside emails.
-    app_public_url: str = "https://kamari.app"
+    app_public_url: str = "https://kamari.shinzii.tech"
 
 
 @lru_cache
