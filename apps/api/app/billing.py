@@ -81,12 +81,13 @@ async def monthly_usage(org_id: str) -> int:
     return count
 
 
-def under_rpm(org_id: str, rpm: int) -> bool:
+def under_rpm(org_id: str, rpm: int) -> tuple[bool, int]:
+    """Record a hit and return (allowed, remaining_this_minute)."""
     now = time.time()
     hits = _rpm_hits.setdefault(org_id, [])
     cutoff = now - 60
     hits[:] = [t for t in hits if t > cutoff]
     if len(hits) >= rpm:
-        return False
+        return False, 0
     hits.append(now)
-    return True
+    return True, max(0, rpm - len(hits))

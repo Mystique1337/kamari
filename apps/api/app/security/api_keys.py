@@ -6,7 +6,7 @@ requests pass through so the app can be exercised locally.
 """
 import hashlib
 
-from fastapi import Header, HTTPException, status
+from fastapi import Header, HTTPException, Response, status
 
 from ..config import get_settings
 
@@ -15,7 +15,9 @@ def hash_key(raw_key: str, pepper: str) -> str:
     return hashlib.sha256(f"{pepper}:{raw_key}".encode()).hexdigest()
 
 
-async def require_key(authorization: str | None = Header(default=None)) -> str | None:
+async def require_key(
+    response: Response, authorization: str | None = Header(default=None),
+) -> str | None:
     """Validate an API key when one is provided and enforce the org's plan limits.
 
     Returns the organization_id when a valid key is used (so usage is org-scoped), or
@@ -37,10 +39,21 @@ async def require_key(authorization: str | None = Header(default=None)) -> str |
     org_id = str(info.get("organization_id"))
 
     plan = plan_for(await billing.plan_for_org(org_id))
-    if not billing.under_rpm(org_id, plan["rpm"]):
-        raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS,
-                            f"Rate limit reached ({plan['rpm']}/min on the {plan['label']} plan).")
-    if await billing.monthly_usage(org_id) >= plan["monthly_quota"]:
-        raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS,
-                            f"Monthly quota reached ({plan['monthly_quota']} on the {plan['label']} plan). Upgrade to continue.")
+    ok, remaining = billing.under_rpm(org_id, plan["rpm"])
+    used = await billing.monthly_usage(org_id)
+    # Standard rate-limit headers so integrators can back off gracefully.
+    response.headers["X-RateLimit-Limit"] = str(plan["rpm"])
+    response.headers["X-RateLimit-Remaining"] = str(remaining)
+    response.headers["X-Quota-Limit"] = str(plan["monthly_quota"])
+    response.headers["X-Quota-Used"] = str(used)
+    if not ok:
+        raise HTTPException(
+            status.HTTP_429_TOO_MANY_REQUESTS,
+            f"Rate limit reached ({plan['rpm']}/min on the {plan['label']} plan).",
+            headers={"Retry-After": "60"})
+    if used >= plan["monthly_quota"]:
+        raise HTTPException(
+            status.HTTP_429_TOO_MANY_REQUESTS,
+            f"Monthly quota reached ({plan['monthly_quota']} on the {plan['label']} plan). Upgrade to continue.",
+            headers={"Retry-After": "3600"})
     return org_id
