@@ -1,6 +1,6 @@
 """Kámárí API gateway (FastAPI).
 
-Orchestration only — heavy ML lives on Modal. Validates requests, runs the policy
+Orchestration only - heavy ML lives on Modal. Validates requests, runs the policy
 engine, calls Modal CNN/Gemma, logs metadata (never raw images), returns the app
 contract. Deployed on Railway.
 """
@@ -54,7 +54,7 @@ from .routes import guardian  # noqa: E402
 
 app.include_router(guardian.router)
 
-# Human auth via Supabase GoTrue — mounts when the project JWT secret is configured.
+# Human auth via Supabase GoTrue - mounts when the project JWT secret is configured.
 # (The app logs in against Supabase directly and sends the access token as a Bearer.)
 if get_settings().supabase_jwt_secret:
     from fastapi import Depends

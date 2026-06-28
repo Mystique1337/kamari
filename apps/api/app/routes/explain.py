@@ -1,4 +1,4 @@
-"""POST /v1/age/explain — re-render an explanation for a known decision (Gemma)."""
+"""POST /v1/age/explain - re-render an explanation for a known decision (Gemma)."""
 from fastapi import APIRouter, Depends
 
 from ..clients.modal_client import gemma_explain

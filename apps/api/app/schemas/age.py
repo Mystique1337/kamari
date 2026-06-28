@@ -1,4 +1,4 @@
-"""Age API schemas — the contract the app (apps/kamari_app) depends on (plan §20/§21)."""
+"""Age API schemas - the contract the app (apps/kamari_app) depends on (plan §20/§21)."""
 from enum import Enum
 
 from pydantic import BaseModel, Field

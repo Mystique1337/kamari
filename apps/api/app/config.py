@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     api_key_pepper: str = "dev-pepper-change-me"
     require_api_key: bool = False  # set True in production
 
-    # Human auth — Supabase GoTrue. The gateway VERIFIES Supabase-issued JWTs (HS256)
+    # Human auth - Supabase GoTrue. The gateway VERIFIES Supabase-issued JWTs (HS256)
     # using the project's JWT secret; users live in Supabase auth.users.
     supabase_anon_key: str = ""
     supabase_jwt_secret: str = ""        # GOTRUE_JWT_SECRET / project JWT secret
@@ -41,11 +41,11 @@ class Settings(BaseSettings):
     # n8n email (live "Dynamic Email Template Sender" workflow). The gateway POSTs
     # {template:{to,subject,body,isHtml}, variables:{...}} with the header-auth secret.
     n8n_email_webhook_url: str = ""
-    n8n_email_header_name: str = "x-webhook-secret"  # match your n8n Header Auth credential
+    n8n_email_header_name: str = "EMAIL_SECRET"  # n8n Header Auth credential name
     n8n_email_header_secret: str = ""
     email_from_name: str = "Kamari"
 
-    # Public app URL (Railway) — used to build links inside emails.
+    # Public app URL (Railway) - used to build links inside emails.
     app_public_url: str = "https://kamari.app"
 
 

@@ -1,6 +1,6 @@
 """The Kámárí decision/policy engine (master plan §10.4).
 
-Conservative near the threshold — borderline cases are NEVER auto-approved.
+Conservative near the threshold - borderline cases are NEVER auto-approved.
 Pure function so it is trivially unit-tested and identical to the Gemma SFT rules.
 """
 from .config import Settings
@@ -11,7 +11,7 @@ _DEFAULT_MESSAGES = {
     ReasonCode.BLOCK_LIKELY_MINOR: "We can’t confirm you meet the age requirement. A guardian check is needed.",
     ReasonCode.SECONDARY_CHECK_NEAR_THRESHOLD: "You’re close to the age limit, so we need one more quick check.",
     ReasonCode.SECONDARY_CHECK_LOW_CONFIDENCE: "We’d like a second check to be sure.",
-    ReasonCode.RECAPTURE_LOW_QUALITY: "The photo was unclear — let’s try once more in better light.",
+    ReasonCode.RECAPTURE_LOW_QUALITY: "The photo was unclear - let’s try once more in better light.",
 }
 
 

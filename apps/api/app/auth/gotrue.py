@@ -1,4 +1,4 @@
-"""Supabase GoTrue auth — verify Supabase-issued JWTs (HS256) on protected routes.
+"""Supabase GoTrue auth - verify Supabase-issued JWTs (HS256) on protected routes.
 
 Users live in Supabase `auth.users`; the app logs in via Supabase directly and sends the
 access token as `Authorization: Bearer <token>`. We verify it with the project JWT secret.

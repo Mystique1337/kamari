@@ -1,4 +1,4 @@
-"""POST /v1/age/estimate — the core flow: CNN signals -> policy -> (Gemma) message."""
+"""POST /v1/age/estimate - the core flow: CNN signals -> policy -> (Gemma) message."""
 import uuid
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile

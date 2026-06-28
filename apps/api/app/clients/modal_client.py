@@ -1,7 +1,7 @@
 """Clients for the Modal CNN + Gemma endpoints, with safe fallbacks.
 
 If an endpoint is unconfigured (dev), a deterministic mock keeps the gateway runnable
-end-to-end without the models — mirroring the app's mock so the contract is exercised.
+end-to-end without the models - mirroring the app's mock so the contract is exercised.
 """
 import random
 

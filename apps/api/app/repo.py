@@ -39,7 +39,7 @@ async def log_inference(row: dict) -> None:
         rec["organization_id"] = row["organization_id"]
     try:
         await asyncio.to_thread(lambda: _tbl("inference_requests").insert(rec).execute())
-    except Exception as e:  # noqa: BLE001 — logging must never break the request
+    except Exception as e:  # noqa: BLE001 - logging must never break the request
         print("[repo] inference log failed:", e)
 
 
@@ -62,7 +62,7 @@ async def create_api_key(user: dict, name: str) -> dict:
     await asyncio.to_thread(
         lambda: _tbl("api_keys").insert(
             {"organization_id": org_id, "key_hash": _hash_key(raw), "name": name}).execute())
-    return {"name": name, "api_key": raw, "note": "shown once — store it now"}
+    return {"name": name, "api_key": raw, "note": "shown once - store it now"}
 
 
 async def list_api_keys(user: dict) -> list[dict]:
