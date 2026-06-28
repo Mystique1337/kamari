@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, File, Form, UploadFile
 
 from ..clients.modal_client import cnn_estimate, gemma_explain
 from ..config import Settings, get_settings
-from ..policy import age_band, decide, default_message
+from ..policy import age_band, decide, default_message, sanitize_message
 from ..schemas.age import AgeEstimateResponse, ReasonCode
 from ..security.api_keys import require_key
 
@@ -38,6 +38,7 @@ async def estimate(
     )
     if gemma and gemma.get("reason_code") == reason.value and gemma.get("user_message"):
         message = gemma["user_message"]
+    message = sanitize_message(message)
 
     # NB: image_bytes is never persisted (retention default = no-store).
     resp = AgeEstimateResponse(

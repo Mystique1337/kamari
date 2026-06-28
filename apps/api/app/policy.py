@@ -6,6 +6,14 @@ Pure function so it is trivially unit-tested and identical to the Gemma SFT rule
 from .config import Settings
 from .schemas.age import Decision, ReasonCode
 
+
+def sanitize_message(text: str) -> str:
+    """House style: no em or en dashes in any user-facing copy, including model output."""
+    if not text:
+        return text
+    return (text.replace(" — ", ", ").replace(" – ", ", ")
+            .replace("—", "-").replace("–", "-"))
+
 _DEFAULT_MESSAGES = {
     ReasonCode.ALLOW: "You’re verified. Welcome in.",
     ReasonCode.BLOCK_LIKELY_MINOR: "We can’t confirm you meet the age requirement. A guardian check is needed.",

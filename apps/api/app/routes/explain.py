@@ -18,6 +18,9 @@ async def explain(payload: dict, s: Settings = Depends(get_settings)) -> dict:
 
     gemma = await gemma_explain(cnn_result, policy_context, language, s)
     if gemma:
+        if gemma.get("user_message"):
+            from ..policy import sanitize_message
+            gemma["user_message"] = sanitize_message(gemma["user_message"])
         return gemma
     # Fallback so the endpoint always returns valid content.
     return {
