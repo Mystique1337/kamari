@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     api_key_pepper: str = "dev-pepper-change-me"
     require_api_key: bool = False  # set True in production
 
+    # Human auth (fastapi-users JWT). Auth routes mount only when database_url is set.
+    jwt_secret: str = "dev-jwt-secret-change-me"
+    jwt_lifetime_seconds: int = 3600
+
     # Policy thresholds (mirrors training/cnn thresholds_v0.json defaults)
     block_p_under_18: float = 0.70
     challenge_threshold: int = 21

@@ -10,6 +10,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from .config import get_settings
 from .routes import age, explain, health
 
 app = FastAPI(
@@ -47,6 +48,16 @@ async def unhandled(request: Request, exc: Exception):
 app.include_router(health.router)
 app.include_router(age.router)
 app.include_router(explain.router)
+
+# Human auth (fastapi-users JWT) mounts only when a database is configured, so the
+# gateway still runs standalone in mock mode. Machines keep using API keys.
+if get_settings().database_url:
+    from .auth.schemas import UserCreate, UserRead, UserUpdate
+    from .auth.users import auth_backend, fastapi_users
+
+    app.include_router(fastapi_users.get_auth_router(auth_backend), prefix="/v1/auth/jwt", tags=["auth"])
+    app.include_router(fastapi_users.get_register_router(UserRead, UserCreate), prefix="/v1/auth", tags=["auth"])
+    app.include_router(fastapi_users.get_users_router(UserRead, UserUpdate), prefix="/v1/users", tags=["auth"])
 
 
 @app.get("/")

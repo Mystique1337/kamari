@@ -20,6 +20,10 @@ can call it live without the models. Set the Modal URLs to go fully live.
 | GET | `/v1/models` | model registry summary |
 | POST | `/v1/age/estimate` | image → CNN → policy → (Gemma) message |
 | POST | `/v1/age/explain` | re-render explanation for a known decision |
+| POST | `/v1/auth/jwt/login`, `/v1/auth/register`, `/v1/users/me` | human auth (fastapi-users JWT) — **mounts only when `DATABASE_URL` is set** |
+
+Humans authenticate via fastapi-users JWT over Postgres (`kamari.app_users`, argon2);
+machines use hashed API keys. Set `JWT_SECRET` + `DATABASE_URL` to enable auth.
 
 ## Env (see infra/railway)
 `MODAL_AGE_ENDPOINT`, `MODAL_GEMMA_ENDPOINT`, `SUPABASE_URL`,
