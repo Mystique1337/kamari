@@ -1,7 +1,7 @@
 # Kámárí Skills Matrix
 
 Tracked inventory of every skill the Kámárí build needs, mapped to the master plan
-(`kamari_web_first_master_plan (2).md`), plus the Claude Code tooling installed to support it.
+(`docs/master_plan.md`), plus the Claude Code tooling installed to support it.
 
 Last updated: 2026-06-28
 

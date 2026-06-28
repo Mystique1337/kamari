@@ -1,35 +1,43 @@
-# Kámárí - Postgres (self-hosted, with pgvector)
+# Kámárí - database (Supabase)
 
-Kámárí uses a plain self-hosted **Postgres + pgvector** (Supabase is no longer required).
-Everything lives in a dedicated `kamari` schema, so it can share an existing database.
+Kámárí uses a self-hosted **Supabase** project. Auth is **GoTrue** (the gateway verifies
+Supabase-issued JWTs), and data goes through **Supabase REST (PostgREST)**. The gateway runs against
+the **public** schema, which PostgREST exposes by default, so no schema reconfiguration is needed.
 
-## Apply
-```bash
-psql "$DATABASE_URL" -f infra/postgres/schema.sql
+## Apply the schema
+Paste **`schema_public.sql`** into the Supabase SQL editor and run it. It creates the three tables
+the gateway uses (`organizations`, `api_keys`, `inference_requests`) in `public` and grants the
+`service_role`.
+
 ```
-Creates schema `kamari`, the `pgcrypto` + `vector` extensions, all tables, and a pgvector
-index on `face_embeddings`.
+SUPABASE_DB_SCHEMA=public
+```
+
+`schema.sql` is an optional variant that puts everything in a dedicated `kamari` schema and adds
+`pgvector` for future 1:1 verification. To use it, run it in the SQL editor, set
+`PGRST_DB_SCHEMAS=public,storage,graphql_public,kamari` on the PostgREST service, and set
+`SUPABASE_DB_SCHEMA=kamari`.
 
 ## Connect the gateway
+Set on the API service (see `apps/api/.env.example`):
 ```
-DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/DBNAME
-SUPABASE_DB_SCHEMA=kamari        # (env name kept; it's just the schema)
+SUPABASE_URL=...
+SUPABASE_SERVICE_ROLE_KEY=...     # gateway data ops via REST
+SUPABASE_ANON_KEY=...
+SUPABASE_JWT_SECRET=...           # used to verify GoTrue access tokens (HS256)
+SUPABASE_DB_SCHEMA=public
 ```
 
-## Auth
-Since Supabase Auth is gone, the gateway owns authentication:
-- **Humans** (developer dashboard): email + password in `kamari.app_users`
-  (`hashed_password` = argon2) issuing JWTs. Recommended via `fastapi-users`.
-- **Machines** (API product): hashed API keys in `kamari.api_keys` (sha256 + pepper) -
-  already in `apps/api/app/security/api_keys.py`.
-
-## pgvector / verification
-`kamari.face_embeddings` stores opt-in face embeddings (`vector(512)`) for **1:1
-verification only** - never 1:N search; queries must be scoped to `subject_ref`.
-Embeddings are not stored by default and should be encrypted at rest.
+## Auth model
+- **Humans** (developer portal): Supabase GoTrue. The app signs in with Supabase and sends the
+  access token as a bearer; the gateway verifies it with the project JWT secret.
+- **Machines** (API product): hashed API keys in `api_keys` (sha256 + pepper), validated and rate
+  limited per plan in `apps/api/app/security/api_keys.py` and `app/billing.py`.
 
 ## Privacy
-Only request **metadata** is stored (decision, reason code, model version, request id) -
+Only request metadata is stored (decision, reason code, model version, request id, organization);
 never raw images. See `inference_requests.retention_policy`.
 
-Full setup flow: `docs/SETUP.md` (Tier 2).
+Pricing tiers store the plan on the org owner's Supabase user metadata, so no extra table is needed.
+
+Full setup flow: `docs/SETUP.md`.

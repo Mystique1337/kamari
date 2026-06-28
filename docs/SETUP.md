@@ -1,166 +1,122 @@
 # Kámárí Setup Guide
 
-How to run and deploy Kámárí, tier by tier. **None of this needs the training datasets**
-except the very last step (real age numbers from the Modal CNN). Do the tiers in order;
-stop wherever you have enough.
+How to run and deploy Kámárí, tier by tier. Do the tiers in order; stop wherever you have enough.
 
 ```
 Tier 0  App on mock ........... 0 setup, runs today
-Tier 1  App ↔ local gateway ... no accounts
-Tier 2  Postgres + pgvector ... your self-hosted DB (+ app-owned auth)
-Tier 3  Railway (gateway live) . Railway account
-Tier 4  Modal (real models) ... Modal account + a trained model (needs datasets)
-Tier 5  Native Android/iOS .... Android Studio / Xcode
+Tier 1  App <-> local gateway . no accounts
+Tier 2  Supabase (auth + data)  GoTrue + REST, public schema
+Tier 3  Modal (real models) ... Modal account + trained model
+Tier 4  Railway (deploy) ...... web + API, custom domains
+Tier 5  Android APK ........... GitHub Actions artifact
 ```
 
 ---
 
 ## Tier 0 - Run the app (mock)
-
 ```bash
 cd apps/kamari_app
 npm install
 npm run dev            # http://localhost:5173
 ```
 The app ships a realistic mock of the age API, so the full flow works with no backend.
-Use it from your laptop browser, or your phone on the same network with `npm run dev -- --host`.
 
 ---
 
-## Tier 1 - App ↔ local gateway (no accounts)
+## Tier 1 - App and local gateway (no accounts)
+Run the FastAPI gateway (it has its own mock for the ML calls) and point the app at it.
 
-Run the real FastAPI gateway (it has its own mock for the ML calls, so it works without
-any model) and point the app at it. This exercises the real API contract + policy engine.
-
-**1. Start the gateway**
 ```bash
 cd apps/api
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload --port 8000      # docs at http://localhost:8000/docs
 ```
-
-**2. Point the app at it** - create `apps/kamari_app/.env.local`:
+Create `apps/kamari_app/.env.local`:
 ```
 VITE_KAMARI_API_URL=http://localhost:8000
 VITE_USE_MOCK=0
 ```
-Restart `npm run dev`. The Developer screen will now show **API mode: live**, and every
-age check is a real HTTP call to the gateway.
+The Developer screen shows API mode: live, and every age check is a real call to the gateway.
 
 ---
 
-## Tier 2 - Postgres + pgvector (self-hosted)
+## Tier 2 - Supabase (auth + data)
+Kámárí uses Supabase **GoTrue** for human auth and Supabase **REST** for data, on the **public**
+schema (PostgREST exposes it by default, so no reconfiguration).
 
-Plain self-hosted Postgres with pgvector - **Supabase is no longer required**. Everything
-lives in a dedicated `kamari` schema, so it can share an existing database.
-
-**1. Apply the schema** (creates schema `kamari`, `pgcrypto` + `vector` extensions, tables):
-```bash
-psql "postgresql://USER:PASSWORD@HOST:5432/DBNAME" -f infra/postgres/schema.sql
-```
-
-**2. Give the gateway a connection** (direct Postgres). Set in the gateway env:
-```
-DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/DBNAME
-SUPABASE_DB_SCHEMA=kamari
-```
-The gateway logs request **metadata only** (decision, model version, request id) to
-`kamari.inference_requests` - never the image. *(Write-path wiring is the next increment;
-the schema + env are ready now.)*
-
-**3. Auth** - since Supabase Auth is gone, the gateway owns authentication. Recommended:
-`fastapi-users` (JWT over `kamari.app_users`, argon2 passwords) for humans, plus the
-existing hashed API keys for machines. `pgvector` powers 1:1 face verification later.
-
-> Because you connect with a privileged role, the gateway enforces org-scoping in code.
-> RLS policies in `schema.sql` are defense-in-depth for any anon/direct access.
-
----
-
-## Tier 3 - Railway (deploy the gateway)
-
-Railway hosts the **gateway only** (no GPU). The `Dockerfile` + `railway.json` already
-live in `apps/api`.
-
-**Option A - Dashboard (easiest)**
-1. railway.app → **New Project → Deploy from GitHub repo** → pick `Mystique1337/kamari`.
-2. In the service **Settings → Root Directory**, set `apps/api`.
-3. Railway auto-detects the Dockerfile. **Variables** → add:
+1. In the Supabase SQL editor, run **`infra/postgres/schema_public.sql`** (creates
+   `organizations`, `api_keys`, `inference_requests` and grants `service_role`).
+2. Set on the gateway (see `apps/api/.env.example`):
    ```
-   MODAL_AGE_ENDPOINT=        (leave empty for now → gateway uses its mock)
-   MODAL_GEMMA_ENDPOINT=
-   DATABASE_URL=postgresql://...        (from Tier 2)
-   SUPABASE_DB_SCHEMA=kamari
-   API_KEY_PEPPER=<random-long-string>
-   REQUIRE_API_KEY=false
-   RETENTION_DEFAULT=image_not_stored
+   SUPABASE_URL=...
+   SUPABASE_SERVICE_ROLE_KEY=...
+   SUPABASE_ANON_KEY=...
+   SUPABASE_JWT_SECRET=...        # verifies GoTrue access tokens
+   SUPABASE_DB_SCHEMA=public
    ```
-4. Deploy. Health check is wired to `/v1/health`. You get a public URL like
-   `https://kamari-api-prod.up.railway.app`.
+3. Set on the app build: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`.
+4. If you want signups usable immediately, set `GOTRUE_MAILER_AUTOCONFIRM=true` (or disable "Enable
+   email confirmations") on the auth service, since Kámárí sends its own welcome email via n8n.
 
-**Option B - CLI**
-```bash
-npm i -g @railway/cli
-railway login
-cd apps/api && railway init && railway up
-```
-
-**Then point the app at the deployed gateway** - in `apps/kamari_app/.env.local` (or your
-host's env): `VITE_KAMARI_API_URL=https://<your-railway-url>`.
+The gateway logs request metadata only (decision, model version, request id, organization), never
+the image. See `infra/postgres/README.md` for the optional dedicated-`kamari`-schema variant and
+`pgvector` for future 1:1 verification.
 
 ---
 
-## Tier 4 - Modal (real models)
-
-Authorize now; the **serving endpoints only return real numbers once a model is trained**
-(which needs your datasets).
-
+## Tier 3 - Modal (real models)
 ```bash
 pip install modal
-modal setup                         # opens browser to authorize
-
-# one secret holds HF + (optional) W&B creds:
-modal secret create kamari-hf HF_TOKEN=... HF_NAMESPACE=Mystique1337 WANDB_API_KEY=... WANDB_PROJECT=kamari
+modal setup                         # authorize in browser
+modal secret create kamari-hf HF_TOKEN=... HF_NAMESPACE=Shinzmann WANDB_API_KEY=... WANDB_PROJECT=kamari
 ```
-
-Train (after the data notebook has published `kamari-faces-v0`):
+Train (after the data notebook has published `kamari-faces-v0`), then deploy serving:
 ```bash
-modal run services/modal_age/train_cnn.py --epochs 20
-modal run services/modal_gemma/train_gemma.py --epochs 3
-```
-
-Deploy serving (gives you the URLs):
-```bash
+modal run    services/modal_age/train_cnn.py
+modal run    services/modal_gemma/train_gemma.py --n 8000
 modal deploy services/modal_age/serve_cnn.py     # -> MODAL_AGE_ENDPOINT
 modal deploy services/modal_gemma/serve_gemma.py # -> MODAL_GEMMA_ENDPOINT
 ```
-Set those two URLs in the gateway env (Railway variables) → the gateway stops mocking and
-returns real estimates. Nothing else in the app changes.
+Both serve always-on (`min_containers=1`). Set the two URLs in the gateway env.
 
 ---
 
-## Tier 5 - Native Android / iOS (optional)
+## Tier 4 - Railway (deploy web + API)
+Two services in one project, each built from its Dockerfile.
 
 ```bash
-cd apps/kamari_app
-npm run build
-npx cap add android        # needs Android Studio
-npx cap add ios            # needs macOS + Xcode
-npx cap sync
-npx cap open android       # or: npx cap open ios
+npm i -g @railway/cli && railway login
+railway init --name kamari
+railway add --service api && railway add --service web
+# set variables (see apps/api/.env.example for api; VITE_* for web), then:
+cd apps/api        && railway up --service api --ci
+cd apps/kamari_app && railway up --service web --ci
+railway domain --service api    # and --service web, to generate URLs
 ```
-Camera permission is already handled in code (front camera, never saved). iOS App Store
-builds require macOS + Xcode.
+Custom domains in production: web `kamari.shinzii.tech`, api `kamari-api.shinzii.tech`. Set the web
+build var `VITE_KAMARI_API_URL` to the API URL and `APP_PUBLIC_URL` on the api to the web URL.
+
+CI/CD: `.github/workflows/` runs tests + app build, auto-deploys to Railway (set repo secret
+`RAILWAY_TOKEN`), and builds the Android APK.
 
 ---
 
-## "Fully live" checklist
+## Tier 5 - Android APK
+The Capacitor `android/` project is committed. CI builds the APK:
+- Push to `main` or run Actions -> Build Android APK -> Run workflow.
+- Download `kamari-android-debug` from the run's Artifacts.
+- Set repo secrets `VITE_KAMARI_API_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` for a live
+  build. Locally (with Android Studio): `npm run build && npx cap sync android && npx cap open android`.
+
+---
+
+## Fully live checklist
 ```
-[ ] Data notebook run → kamari-faces-v0 on HF
-[ ] CNN trained + serve_cnn deployed → MODAL_AGE_ENDPOINT
-[ ] (optional) Gemma trained + serve_gemma deployed → MODAL_GEMMA_ENDPOINT
-[ ] Gateway on Railway with the two Modal URLs + DATABASE_URL
-[ ] App VITE_KAMARI_API_URL → Railway URL, VITE_USE_MOCK=0
-[ ] kamari schema applied to self-hosted Postgres
+[x] Data notebook run -> kamari-faces-v0 on HF
+[x] CNN trained + serve_cnn deployed -> MODAL_AGE_ENDPOINT
+[x] Gemma trained + serve_gemma deployed -> MODAL_GEMMA_ENDPOINT
+[x] Supabase schema_public.sql applied; GoTrue + REST configured
+[x] Gateway + web on Railway with custom domains
+[x] App VITE_KAMARI_API_URL -> API domain, VITE_USE_MOCK=0
 ```

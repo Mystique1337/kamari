@@ -1,65 +1,112 @@
 # Kámárí
 
-African-focused **age-gating and face-verification** system, built web-first and shipped as web app, PWA, Android, and iOS from one codebase.
+African-focused, privacy-first **age verification**. A user takes a selfie, Kámárí returns a
+calibrated age decision and a clear, multilingual message. The photo is processed once and never
+stored. Open source under **Apache-2.0**, with a managed API you can pay for by usage.
 
-**Core split:** a small calibrated **CNN** makes the age-gate decision; **Gemma** explains it (multilingual, policy, strict JSON); **FastAPI** orchestrates; **Ionic React + Capacitor** is the client; **Postgres + pgvector**, **Modal**, **Railway**, **n8n**, and **Hugging Face** provide data, compute, hosting, automation, and public artifacts.
+**Live:** web app at **https://kamari.shinzii.tech**, API at **https://kamari-api.shinzii.tech**.
 
-See `kamari_web_first_master_plan (2).md` for the full build plan.
+## How it works
+A small calibrated **CNN** makes the age-gate signal (estimated age, probability under-18,
+uncertainty), a **policy engine** turns that into a decision, and a fine-tuned **Gemma** model
+writes the human, in-language explanation as strict JSON. A FastAPI gateway orchestrates it; an
+Ionic React + Capacitor client ships to web, PWA, and Android.
 
-## Deliverables
-1. Kámárí Dataset + Benchmark (Kámárí-Safe Open v0)
-2. Kámárí Small CNN age-gating model
-3. Kámárí Gemma fine-tuned explanation/policy model
-4. Kámárí API + Web/PWA/Android/iOS app
-
-## Planned monorepo layout
 ```
-apps/{api, kamari_app}   services/{modal_age, modal_gemma, verification, liveness}
-data/   training/{cnn, gemma}   benchmarks/   infra/   docs/
+Selfie ─▶ CNN (age, p<18, uncertainty, quality)
+            └─▶ Policy engine ─▶ decision (allow | secondary_check | block | recapture)
+                                   └─▶ Gemma ─▶ strict-JSON, in-language message
 ```
 
-## Privacy posture (default)
-No raw face images or embeddings stored by default · metadata + audit logs only · retention visible in API and UI · **1:1 verification only, never 1:N face search** · every age result is an estimate, not a legal determination.
+## Decisions
+| Decision | Meaning |
+|---|---|
+| `allow` | Age requirement met. |
+| `secondary_check` | Borderline (near 18 to 21) or low confidence. Run liveness or a guardian check. |
+| `block` | Likely under age. Hand off to the guardian consent flow. |
+| `recapture` | No clear face or poor quality. Ask for a new photo. |
 
-## Setup
-- **[`docs/SETUP.md`](docs/SETUP.md)** - tier-by-tier setup: app, local gateway, self-hosted Postgres + pgvector, Railway, Modal, native.
+## Repository layout
+```
+apps/api          FastAPI gateway (Railway): policy, auth, keys, usage, pricing, email
+apps/kamari_app   Ionic React + Capacitor client (web, PWA, Android)
+services/modal_age    CNN training + CPU serving on Modal
+services/modal_gemma  Gemma QLoRA training + GPU serving on Modal
+notebooks         One Colab notebook: gather, clean, EDA, publish datasets to Hugging Face
+data, training    Dataset registry/adapters, manifest schema, SFT builder
+infra             Postgres schema (Supabase), n8n workflow export, Railway notes
+docs              Master plan, setup, model cards, methodology
+```
 
-## Repo tooling
-- **Skills matrix:** [`docs/skills_matrix.md`](docs/skills_matrix.md) - full skill inventory + installed Claude Code plugins + project skills.
-- **Claude Code plugins:** enabled in `.claude/settings.json`.
-- **Project skills:** `.claude/skills/kamari-*` encode each workstream's conventions.
+## Results (v0)
 
-## Contributing conventions
-- Commit **feature by feature**; commits authored as `chidi.ashinze@gmail.com`.
-- Update relevant READMEs after any major addition.
-- Branches: `main` (prod) · `staging` · `feature/*` · `model/*`.
+**CNN age model** (`tf_efficientnetv2_s`, 30 epochs on H200, held-out benchmark n=8,322):
 
-## Status
-- ✅ Data pipeline - single Colab notebook (`notebooks/`): gather → auto label-quality gate → preprocess → EDA → HF. *Run on Colab.*
-- ✅ App - `apps/kamari_app` (Ionic React + Capacitor + PWA): consumer age check (language + country picker, liveness secondary check, guardian consent), and a developer portal (Supabase GoTrue auth, live API keys, org-scoped usage + logs). Ships web, PWA, and a downloadable Android APK.
-- ✅ API gateway - `apps/api` (FastAPI): policy engine, Supabase GoTrue JWT verification, data via Supabase REST, Modal clients, org-scoped usage analytics, guardian consent flow, and transactional email via n8n. Mock-to-live.
-- ✅ **CNN trained** - `tf_efficientnetv2_s`, **MAE 6.03** (held-out), MPTR@18 reported by skin band. Served on CPU.
-- ✅ **Gemma 4 (E4B) fine-tuned** - QLoRA explanation/policy adapter, strict-JSON. Served on GPU.
-- ✅ **Serving always-on** - CNN + Gemma keep one warm container each (`min_containers=1`); no cold starts.
-- ✅ **Email** - live n8n "Dynamic Email Template Sender": welcome, API key created/revoked, guardian consent. Branded, customised templates.
+| Metric | Value |
+|---|---|
+| MAE | **6.03 years** |
+| MPTR@18 (minors passed as adults) | 0.317 |
+| MPTR@18, dark + brown skin | 0.383 |
+| MPTR@21 | 0.27 |
+| Adult-block rate (adults wrongly blocked) | 0.01 |
+| MAE by skin: dark / light | 6.58 / 5.72 |
+| GPU eval latency p50 / p95 | 14.2 ms / 14.3 ms |
 
-### Trained artifacts (Hugging Face, namespace `Shinzmann`)
+MAE is strong; MPTR@18 is still high, so **the CNN is not a standalone gate**. The policy engine
+(conservative near the 18 to 21 boundary), uncertainty routing, liveness, and the guardian flow
+provide the safety margin. Lowering MPTR needs more 13 to 17 and African-labelled data. The safety
+headline is **Minor-Pass-Through Rate**, weighted 5x in model selection.
+
+**Gemma explanation model** (`gemma-4-E4B-it`, QLoRA r=32, 3 epochs): produces strict-JSON,
+in-language messages and never estimates age. The deployed model is verified returning valid JSON
+live; the v0 offline eval ran through a decoding path affected by a Gemma 4 `generate()` bug and is
+not representative (a corrected eval is pending). See `services/modal_gemma/README.md`.
+
+## Dataset and benchmark (Kámárí-Safe Open v0)
+Built from open, license-checked face datasets with an auto label-quality gate, MTCNN face crops,
+skin-tone (ITA) banding, and a leakage-free split. Composition: ~480,828 kept rows; 24,753 exact-age
+training rows; African-signal slice 10,182; 13 to 21 boundary slice 3,139. Full methodology in
+[`docs/methodology.md`](docs/methodology.md). Artifacts on Hugging Face (namespace `Shinzmann`).
+
+## Trained artifacts (Hugging Face)
 | Artifact | Repo |
 |---|---|
-| CNN age model (ONNX + weights + reports) | [`Shinzmann/cnn-age-v0`](https://huggingface.co/Shinzmann/cnn-age-v0) |
-| Gemma 4 explanation LoRA | [`Shinzmann/gemma-explain-lora-v0`](https://huggingface.co/Shinzmann/gemma-explain-lora-v0) |
-| Training faces (private) | `Shinzmann/kamari-faces-v0` |
-| Dataset registry / provenance | `Shinzmann/dataset-registry-v0` |
+| CNN age model (weights, ONNX, reports) | `Shinzmann/cnn-age-v0` |
+| Gemma explanation LoRA | `Shinzmann/gemma-explain-lora-v0` |
 | Benchmark (Kámárí-Safe Open v0) | `Shinzmann/kamari-safe-open-v0` |
-| Gemma SFT set | `Shinzmann/gemma-sft-v0` |
+| Dataset registry / provenance | `Shinzmann/dataset-registry-v0` |
+| Training faces (private) | `Shinzmann/kamari-faces-v0` |
 
-### Where things run
+## Where things run
 | Workstream | Runs on |
 |---|---|
-| Data gather/clean/EDA/upload | Google Colab → Hugging Face |
-| CNN + Gemma **training** | Modal (H200) |
-| **CNN serving** | **CPU**, always-on (`best.pt`) |
-| **Gemma serving** | **GPU** L4, always-on (4B + LoRA) |
-| App (web/PWA) + API gateway | Railway |
+| Data gather / clean / EDA / publish | Google Colab, then Hugging Face |
+| CNN + Gemma training | Modal (H200) |
+| CNN serving | Modal CPU, always-on, OpenCV face detect + crop |
+| Gemma serving | Modal GPU L4, always-on |
+| Web app + API gateway | Railway (custom domains) |
 | Android APK | GitHub Actions artifact |
-| Email | n8n (Gmail) |
+| Auth + data | Supabase (GoTrue + REST, public schema) |
+| Email | n8n (welcome, API key, guardian) |
+
+## Platform features
+- Consumer age check with language + country picker (English, Pidgin, French, Swahili, Yoruba,
+  Hausa, Igbo, Zulu, Amharic), on-device liveness, and a guardian consent flow.
+- Developer portal: login, API keys, usage and logs, and pricing tiers (Free / Growth / Scale) with
+  enforced rate limits and monthly quotas (demo billing, no payment yet).
+- Developer docs with curl / JavaScript / Python examples at `/docs`.
+
+## Privacy posture
+No raw face images or embeddings stored by default. Metadata and audit logs only, with retention
+visible in the API and UI. Verification is 1:1 only, never 1:N face search. Every age result is an
+estimate, not a legal determination.
+
+## Setup and deploy
+- [`docs/SETUP.md`](docs/SETUP.md) — local run, Supabase, Modal, Railway, native build.
+- [`docs/master_plan.md`](docs/master_plan.md) — the web-first product plan.
+- CI/CD: GitHub Actions run tests + app build, build the Android APK, and auto-deploy to Railway
+  (set `RAILWAY_TOKEN`).
+
+## Contributing
+Apache-2.0. Commit feature by feature. Keep relevant READMEs current after any major change. House
+style: no em dashes anywhere.

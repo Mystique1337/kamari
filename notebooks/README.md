@@ -1,13 +1,16 @@
 # Kámárí Data Notebook (run on Google Colab)
 
-Use **`kamari_data_pipeline_v2.ipynb`** on Google Colab. It keeps the original single-notebook
-flow from **`kamari_data_pipeline.ipynb`**, but expands the gather step to cover every dataset
-named in the recommendations and writes African-focused benchmark/report outputs.
+Use **`kamari_data_pipeline_v4_new_fast.ipynb`** on Google Colab. One notebook gathers,
+cleans, preprocesses, runs EDA, and publishes the datasets to Hugging Face so the Modal
+training scripts can pull them. Full methodology: [`../docs/methodology.md`](../docs/methodology.md).
 
 ## What it does
-**1. Gather** licence-cleared datasets → **2. Preprocess** (face-align, crop 224, quality +
-ITA/skin band, build manifest) → **3. EDA** (distributions, 13-21 boundary, fairness,
-quality report) → **4. Publish to Hugging Face**.
+**1. Gather** licence-cleared datasets -> **2. Preprocess** (face-align, crop 224, quality +
+ITA/skin band, auto label-quality gate, build manifest) -> **3. EDA** (distributions, 13 to 21
+boundary, fairness, quality report) -> **4. Publish to Hugging Face**.
+
+v0 composition: candidate 825,129 rows, kept 480,828; exact-age training 24,753; African-signal
+10,182; 13 to 21 boundary 3,139.
 
 ## Hugging Face outputs
 | Repo | Visibility | Holds | Consumed by |
@@ -34,7 +37,7 @@ the dataset is not directly open-downloadable: `APPA_REAL_URL`, `ADIENCE_URL`, `
 `BFW_HF_REPO`, `CELEBA_SPOOF_URL` or `CELEBA_SPOOF_HF_REPO`, `CEFA_URL`,
 `OULU_NPU_URL`, `CASIA_FACE_AFRICA_URL`, `BVC_UNN_URL`, and `NEFI_URL`.
 
-The v2 notebook records request/agreement-only datasets as access gaps until approved sources
+The notebook records request/agreement-only datasets as access gaps until approved sources
 are supplied; it does not silently drop them.
 
 Tracked source/download URLs live in `data/registry/dataset_sources.yaml`. Direct-download
@@ -42,14 +45,14 @@ defaults are already present in `.env.example`; request/agreement-only entries s
 until access is approved.
 
 Kaggle datasets can be downloaded either through the Kaggle API credentials or through
-`kagglehub` slugs in `.env.example`; v2 uses `kagglehub` for FAGE, Adience, AgeDB,
+`kagglehub` slugs in `.env.example`; the notebook uses `kagglehub` for FAGE, Adience, AgeDB,
 AxonData, LFW, and AgeDB-30.
 
 ## Hand-off
 The final cell prints the HF dataset links. Training reads from `kamari-faces-v0`; nothing
 else is needed to kick off CNN training on Modal.
 
-The v2 notebook also writes `AFRICAN_TAILORING_REPORT.md`, `BENCHMARK_CARD.md`, and fixed
+The notebook also writes `AFRICAN_TAILORING_REPORT.md`, `BENCHMARK_CARD.md`, and fixed
 benchmark split manifests for African signal, Black subset, dark-skin, 13-21 boundary, and
 low-quality-camera slices.
 It also writes `pipeline_dataset_audit.csv/md`, which shows whether each planned dataset

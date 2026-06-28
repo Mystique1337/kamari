@@ -1,49 +1,52 @@
-# Kámárí CNN (Modal)
+# Kámárí CNN age model (Modal)
 
-Small, multi-head age-gating model. **Training** pulls the dataset from Hugging Face;
-**serving** loads the licence-clean **ONNX on CPU** (no GPU needed to host).
+Trains the age-gating CNN on Modal (H200) from the Hugging Face dataset, and serves it on CPU with
+face detection and crop. Returns raw signals only; the policy/decision engine lives in the gateway.
 
-## Trained model - `Shinzmann/cnn-age-v0`
-- Model: https://huggingface.co/Shinzmann/cnn-age-v0  ·  backbone `tf_efficientnetv2_s`, 30 epochs (H200)
-- Benchmark (held-out, n=8,322): **MAE 6.03 yrs** · MPTR@18 **0.317** (dark-skin **0.383**) ·
-  MPTR@21 0.27 · Adult-Block 0.01 · MAE dark-skin 6.58 / light 5.72
-- Artifacts: `best.pt`, **`cnn_v0.onnx`** (CPU serving), `thresholds_v0.json`, `metrics_v0.json`,
-  `training_log.jsonl`, `benchmark_age_report_v0.md`, `latency_report_v0.md`
-- **Note:** MAE is strong; MPTR@18 is still high, so the model is **not a standalone gate** -
-  the policy engine + secondary checks + uncertainty provide the safety margin. Lowering MPTR
-  needs more 13-17 and African-labelled data.
+## Model
+- Backbone EfficientNetV2-S (`tf_efficientnetv2_s`), ImageNet-pretrained.
+- Three heads: age regression, under-18 logit, heteroscedastic uncertainty (log-variance).
+- Loss: heteroscedastic Gaussian NLL (age) + BCE (minor head).
+- Composite sampling over age-band x skin-band, with a 3x boost for ages 13 to 21 and 1.5x for brown
+  and dark skin. Selection minimizes `MAE + 5 x MPTR@18`.
 
-## Artifacts (code)
-| File | Role |
+Full method: [`docs/methodology.md`](../../docs/methodology.md).
+
+## Results (v0, held-out benchmark n=8,322)
+| Metric | Value |
 |---|---|
-| `train_cnn.py` | Modal training: **HF data** → train → full subgroup/latency eval → **W&B** → push `cnn-age-v0` |
-| `serve_cnn.py` | Modal serving: **ONNX on CPU** → raw age signals |
+| MAE | 6.03 years |
+| MPTR@18 | 0.317 |
+| MPTR@18 (dark + brown skin) | 0.383 |
+| MPTR@21 | 0.27 |
+| Adult-block rate | 0.01 |
+| MAE dark / light skin | 6.58 / 5.72 |
+| Validation MAE / MPTR@18 | 5.73 / 0.20 |
+| GPU eval latency p50 / p95 | 14.2 / 14.3 ms |
+
+MAE is strong but MPTR@18 is high, so this is **not a standalone gate**. The policy engine,
+uncertainty routing, liveness, and the guardian flow provide the safety margin. Lowering MPTR needs
+more 13 to 17 and African-labelled data.
 
 ## Train
-Backbone `tf_efficientnetv2_s` (configurable). Reads `Shinzmann/kamari-faces-v0`, **auto-gates
-bad/categorical-age datasets**, composite-samples (age-band × skin-band + 13-21 boost +
-dark-skin boost), checkpoints each epoch to the `kamari-cnn` Volume (resumable), tracks in **W&B**.
 ```bash
-modal secret create kamari-hf HF_TOKEN=... HF_NAMESPACE=Shinzmann WANDB_API_KEY=... WANDB_PROJECT=kamari
-modal run --detach services/modal_age/train_cnn.py --epochs 30    # --detach survives client drops
+modal run services/modal_age/train_cnn.py            # or modal run --detach for long runs
 ```
-GPU defaults to **H200** (`KAMARI_GPU` to change). Optional `KAMARI_TRUSTED_AGE_DATASETS` to pin
-an exact-age allowlist; `KAMARI_BENCH_MAX` caps benchmark eval size.
+Pulls `Shinzmann/kamari-faces-v0`, trains 30 epochs (H200), checkpoints to a Modal Volume
+(resumable), and pushes `best.pt`, `cnn_v0.onnx`, `thresholds_v0.json`, `metrics_v0.json`, and
+reports to `Shinzmann/cnn-age-v0`. W&B logging when `WANDB_API_KEY` is set.
 
-## Serve (CPU)
+## Serve (CPU, always-on)
 ```bash
-modal deploy services/modal_age/serve_cnn.py     # CPUExecutionProvider - cheap, ~14 ms/req
-# -> set the printed URL as MODAL_AGE_ENDPOINT in apps/api
-curl -F image=@selfie.jpg https://<...>/estimate
+modal deploy services/modal_age/serve_cnn.py
+# -> https://<ns>--kamari-cnn-serve-endpoint.modal.run  (set as MODAL_AGE_ENDPOINT)
+curl -F image=@selfie.jpg https://.../estimate
 ```
+- Loads the PyTorch `best.pt` (the ONNX external-weights sidecar did not survive the HF download).
+- **Detects and crops the largest face** with an OpenCV Haar cascade (30% margin) so inference
+  matches the training crops. No face found returns `faces_detected: 0` and quality 0, so the
+  gateway asks for a recapture. This is what stops every photo from failing the quality gate.
+- `min_containers=1` keeps one warm container so there is no cold start
+  (`KAMARI_CNN_MIN_CONTAINERS=0` to scale to zero).
 
-## Output (raw signals - policy lives in the gateway)
-```json
-{ "estimated_age": 17.4, "p_under_18": 0.76, "uncertainty": 0.18,
-  "face_quality": 0.93, "model_version": "cnn_v0.1.0" }
-```
-
-## Notes
-- Training crops are never published publicly; the ONNX + thresholds + reports are.
-- Resumable: re-running `modal run` continues from `last.pt` in the `kamari-cnn` Volume.
-- Estimate only - not a legal age determination.
+Response: `{estimated_age, p_under_18, uncertainty, face_quality, faces_detected, model_version}`.

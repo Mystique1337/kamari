@@ -2,7 +2,7 @@
 
 Date checked: 2026-06-28
 
-Source plan: `kamari_web_first_master_plan (2).md`
+Source plan: `docs/master_plan.md`
 
 This document tracks the Codex skills installed for the Kamari web-first build and the project skill areas that still need normal engineering work rather than a Codex skill install.
 

@@ -34,9 +34,14 @@ VITE_SUPABASE_ANON_KEY=<anon key>
 - **Developer portal (Supabase GoTrue auth):** sign in / sign up, manage live API keys, and see
   org-scoped usage (totals, allow rate, decision mix) and recent request logs.
 
+Live at **https://kamari.shinzii.tech** (API at `https://kamari-api.shinzii.tech`).
+
 ## Screens
 `Welcome` · `Consent` · `CameraCapture` · `AgeResult` · `SecondaryCheck` · `GuardianConsent` ·
-`Login` · `DeveloperDashboard` · `ApiKeys` · `UsageLogs`.
+`Login` · `DeveloperDashboard` · `ApiKeys` · `UsageLogs` · `Pricing` · `Docs`.
+
+The developer area shows the current plan and monthly-quota usage; `Pricing` lists the tiers with
+demo switching; `Docs` is an in-app API reference with curl / JavaScript / Python examples.
 
 ## Architecture
 - `src/lib/api.ts` - the single API seam (mock or live gateway). Validates responses with Zod.

@@ -2,7 +2,7 @@
 
 FastAPI orchestration gateway. Validates requests, runs the **policy/decision engine**,
 calls the Modal CNN + Gemma endpoints, and returns the app contract. No heavy ML here;
-no raw images stored. Deployed on Railway.
+no raw images stored. Deployed on Railway at **https://kamari-api.shinzii.tech**.
 
 ## Run
 ```bash
@@ -23,7 +23,9 @@ can call it live without the models. Set the Modal URLs to go fully live.
 | GET | `/v1/me` | current user (GoTrue) |
 | POST/GET/DELETE | `/v1/keys` | API key create / list / revoke (emails on create + revoke) |
 | GET | `/v1/usage/summary`, `/v1/usage/logs` | org-scoped usage analytics |
-| POST | `/v1/account/welcome` | send the welcome email after signup |
+| POST | `/v1/account/welcome` | send the welcome email after signup (public, rate-limited) |
+| GET | `/v1/account/plans` | public pricing catalogue |
+| GET/POST | `/v1/account/plan` | current plan + usage / switch plan (demo) |
 | POST | `/v1/guardian/request`, `/v1/guardian/verify`, `GET /v1/guardian/status/{id}` | guardian consent (public) |
 
 Humans authenticate via **Supabase GoTrue** JWTs, which the gateway verifies with the project
@@ -42,9 +44,15 @@ See **`.env.example`**. Key vars: `MODAL_AGE_ENDPOINT`, `MODAL_GEMMA_ENDPOINT`, 
 `API_KEY_PEPPER`, `REQUIRE_API_KEY`, `N8N_EMAIL_WEBHOOK_URL`, `N8N_EMAIL_HEADER_NAME`,
 `N8N_EMAIL_HEADER_SECRET`, `APP_PUBLIC_URL`, `RETENTION_DEFAULT`.
 
+## Pricing tiers (demo, enforced)
+Plans Free / Growth / Scale (`app/plans.py`) set a per-minute rate limit and a monthly quota.
+`app/billing.py` enforces both on keyed requests (429 on exceed) and resolves the plan from the org
+owner's Supabase user metadata. Switching plans is a demo (no payment); wire a provider into
+`POST /v1/account/plan` to charge.
+
 ## Database
-Run `infra/postgres/schema_public.sql` (public schema, no PostgREST reconfig) or
-`infra/postgres/schema.sql` (dedicated `kamari` schema). Set `SUPABASE_DB_SCHEMA` to match.
+Run `infra/postgres/schema_public.sql` (public schema, no PostgREST reconfig). The dedicated-schema
+variant `schema.sql` is optional. Set `SUPABASE_DB_SCHEMA` to match (default `public`).
 
 ## Policy engine (`app/policy.py`, plan §10.4)
 Conservative near the boundary - borderline cases are never auto-approved. Decision codes
