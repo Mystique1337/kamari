@@ -48,9 +48,10 @@ def _band(a):
     return "na"
 
 
-@app.function(gpu=GPU, timeout=60 * 60 * 24, volumes={CKPT: ckpt_vol}, secrets=[hf_secret])
+@app.function(gpu=GPU, cpu=16.0, memory=65536, timeout=60 * 60 * 24,
+              volumes={CKPT: ckpt_vol}, secrets=[hf_secret])
 def train(epochs: int = 30, backbone: str = "tf_efficientnetv2_s",
-          lr: float = 3e-4, batch_size: int = 256, warmup_frac: float = 0.05,
+          lr: float = 3e-4, batch_size: int = 512, warmup_frac: float = 0.05,
           val_frac: float = 0.1, seed: int = 7):
     import hashlib
     import json
@@ -67,8 +68,12 @@ def train(epochs: int = 30, backbone: str = "tf_efficientnetv2_s",
     from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
 
     torch.manual_seed(seed); np.random.seed(seed)
+    torch.backends.cudnn.benchmark = True          # autotune convs for fixed input size
+    torch.backends.cuda.matmul.allow_tf32 = True   # TF32 matmuls on H200
+    torch.backends.cudnn.allow_tf32 = True
     token, ns = os.environ["HF_TOKEN"], os.environ.get("HF_NAMESPACE", "kamari")
     device = "cuda" if torch.cuda.is_available() else "cpu"
+    nworkers = max(4, (os.cpu_count() or 8))
     os.makedirs(CKPT, exist_ok=True)
 
     # ---------------- data ----------------
@@ -148,7 +153,8 @@ def train(epochs: int = 30, backbone: str = "tf_efficientnetv2_s",
             return self.tf(img), torch.tensor(float(r["age"])), torch.tensor(1.0 if r["age"] < 18 else 0.0)
 
     train_loader = DataLoader(FaceAges(train_df, train_tf), batch_size=batch_size, sampler=sampler,
-                              num_workers=8, drop_last=True, pin_memory=True)
+                              num_workers=nworkers, drop_last=True, pin_memory=True,
+                              persistent_workers=True, prefetch_factor=4)
 
     # ---------------- model ----------------
     class AgeNet(nn.Module):
@@ -161,7 +167,7 @@ def train(epochs: int = 30, backbone: str = "tf_efficientnetv2_s",
             f = self.backbone(x)
             return self.age(f).squeeze(1), self.minor(f).squeeze(1), self.logvar(f).squeeze(1)
 
-    model = AgeNet().to(device)
+    model = AgeNet().to(device).to(memory_format=torch.channels_last)  # tensor-core friendly
     opt = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=1e-4)
     bce = nn.BCEWithLogitsLoss()
     steps = max(1, len(train_loader)) * epochs
@@ -181,10 +187,11 @@ def train(epochs: int = 30, backbone: str = "tf_efficientnetv2_s",
     @torch.no_grad()
     def predict(frame):
         model.eval()
-        loader = DataLoader(FaceAges(frame, eval_tf), batch_size=batch_size, num_workers=8, shuffle=False)
+        loader = DataLoader(FaceAges(frame, eval_tf), batch_size=batch_size, num_workers=nworkers,
+                            shuffle=False, pin_memory=True)
         preds, p_un = [], []
         for x, _, _ in loader:
-            x = x.to(device)
+            x = x.to(device, non_blocking=True, memory_format=torch.channels_last)
             with torch.autocast("cuda", dtype=torch.bfloat16, enabled=device == "cuda"):
                 a, m, _ = model(x)
             preds += a.float().cpu().tolist(); p_un += torch.sigmoid(m.float()).cpu().tolist()
@@ -257,7 +264,8 @@ def train(epochs: int = 30, backbone: str = "tf_efficientnetv2_s",
     for ep in range(start_epoch, epochs):
         model.train(); tot = 0.0
         for x, age, minor in train_loader:
-            x, age, minor = x.to(device), age.to(device), minor.to(device)
+            x = x.to(device, non_blocking=True, memory_format=torch.channels_last)
+            age = age.to(device, non_blocking=True); minor = minor.to(device, non_blocking=True)
             with torch.autocast("cuda", dtype=torch.bfloat16, enabled=device == "cuda"):
                 pa, pm, logvar = model(x)
                 age_loss = (0.5 * torch.exp(-logvar) * (pa - age) ** 2 + 0.5 * logvar).mean()

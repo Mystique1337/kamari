@@ -45,7 +45,8 @@ VALID_NEXT = {"proceed", "request_id_or_guardian_flow", "retake_photo", "manual_
 REQUIRED_KEYS = {"decision", "reason_code", "user_message", "admin_summary", "next_step", "language", "safety_note"}
 
 
-@app.function(gpu=GPU, timeout=60 * 60 * 12, volumes={OUT: out_vol}, secrets=[hf_secret])
+@app.function(gpu=GPU, cpu=16.0, memory=131072, timeout=60 * 60 * 12,
+              volumes={OUT: out_vol}, secrets=[hf_secret])
 def train(epochs: int = 3, lr: float = 2e-4, rank: int = 32):
     import json
     import torch
@@ -92,9 +93,10 @@ def train(epochs: int = 3, lr: float = 2e-4, rank: int = 32):
                       target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"])
     cfg = SFTConfig(
         output_dir=OUT + "/adapter", num_train_epochs=epochs,
-        per_device_train_batch_size=8, gradient_accumulation_steps=4,
+        per_device_train_batch_size=16, gradient_accumulation_steps=2,
         learning_rate=lr, lr_scheduler_type="cosine", warmup_ratio=0.03, weight_decay=0.01,
-        bf16=True, gradient_checkpointing=True, gradient_checkpointing_kwargs={"use_reentrant": False},
+        bf16=True, tf32=True, gradient_checkpointing=False,  # H200 has the memory; skip the recompute
+        dataloader_num_workers=8, dataloader_pin_memory=True,
         packing=True, neftune_noise_alpha=5, max_seq_length=1024,
         logging_steps=20, eval_strategy="epoch", save_strategy="epoch", save_total_limit=2,
         load_best_model_at_end=True, metric_for_best_model="eval_loss", greater_is_better=False,
