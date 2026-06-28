@@ -20,8 +20,8 @@ import os
 import modal
 
 GPU = os.environ.get("KAMARI_GPU", "H200")  # user has H200
-# Gemma 4B (multimodal-capable; used text-only here). HF_TOKEN must accept the Gemma licence.
-MODEL_ID = os.environ.get("GEMMA_MODEL_ID", "google/gemma-3-4b-it")
+# Gemma 4 (effective-4B). Multimodal checkpoint used text-only. HF_TOKEN must accept the licence.
+MODEL_ID = os.environ.get("GEMMA_MODEL_ID", "google/gemma-4-E4B-it")
 
 image = (
     modal.Image.debian_slim(python_version="3.11")
@@ -77,10 +77,10 @@ def train(epochs: int = 3, lr: float = 2e-4, rank: int = 32):
                     attn_implementation="eager", token=token)
     try:
         model = AutoModelForCausalLM.from_pretrained(MODEL_ID, **_load_kw)
-    except Exception as e:  # gemma-3-4b-it is a multimodal checkpoint -> use its class, train text-only
-        print("AutoModelForCausalLM failed, loading Gemma3 multimodal (text-only training):", e)
-        from transformers import Gemma3ForConditionalGeneration
-        model = Gemma3ForConditionalGeneration.from_pretrained(MODEL_ID, **_load_kw)
+    except Exception as e:  # Gemma 4 / E4B are multimodal -> generic loader, train text-only
+        print("AutoModelForCausalLM failed; loading via AutoModelForImageTextToText:", e)
+        from transformers import AutoModelForImageTextToText
+        model = AutoModelForImageTextToText.from_pretrained(MODEL_ID, **_load_kw)
 
     def to_text(ex, with_answer=True):
         user = f"{ex['instruction']}\nInput: {json.dumps(ex['input'], ensure_ascii=False)}"

@@ -17,7 +17,7 @@ import os
 import modal
 
 GPU = os.environ.get("KAMARI_SERVE_GPU", "L4")  # 4B + adapter fits L4 (24GB); cheap to serve
-MODEL_ID = os.environ.get("GEMMA_MODEL_ID", "google/gemma-3-4b-it")
+MODEL_ID = os.environ.get("GEMMA_MODEL_ID", "google/gemma-4-E4B-it")
 
 image = (
     modal.Image.debian_slim(python_version="3.11")
