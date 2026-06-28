@@ -2,7 +2,7 @@ import {
   IonContent, IonPage, IonHeader, IonToolbar, IonTitle, IonButtons, IonBackButton,
   IonButton, IonIcon, IonSpinner, IonToggle,
 } from '@ionic/react';
-import { cameraOutline, refreshOutline, checkmarkCircle } from 'ionicons/icons';
+import { cameraOutline, refreshOutline, checkmarkCircle, cloudUploadOutline } from 'ionicons/icons';
 import { useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useKamari } from '../lib/state';
@@ -71,6 +71,16 @@ export default function CameraCapture() {
       return;
     }
     if (videoRef.current && videoRef.current.readyState >= 2) await run(captureFrame(videoRef.current));
+  };
+
+  const fileRef = useRef<HTMLInputElement>(null);
+  const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => { stopStream(); run(String(reader.result)); };
+    reader.readAsDataURL(file);
+    e.target.value = '';
   };
 
   // Readiness sampling: brightness + sharpness of the centre region. Drives auto-capture.
@@ -163,10 +173,18 @@ export default function CameraCapture() {
             {busy ? tr('checking') : tr('capture')}
           </IonButton>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 16, color: 'rgba(246,239,226,.85)' }}>
-            <IonToggle checked={auto} onIonChange={(e) => setAuto(e.detail.checked)} aria-label="Auto capture" />
-            <span style={{ fontSize: '.85rem' }}>Auto capture</span>
-          </div>
+          {/* Upload a photo instead (great on desktop) */}
+          <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
+          <IonButton fill="clear" style={{ color: 'var(--kamari-cream)', marginTop: 4 }} onClick={() => fileRef.current?.click()} disabled={busy}>
+            <IonIcon slot="start" icon={cloudUploadOutline} /> Upload a photo
+          </IonButton>
+
+          {!isNative() && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 6, color: 'rgba(246,239,226,.85)' }}>
+              <IonToggle checked={auto} onIonChange={(e) => setAuto(e.detail.checked)} aria-label="Auto capture" />
+              <span style={{ fontSize: '.85rem' }}>Auto capture</span>
+            </div>
+          )}
           <span className="kamari-badge on-dark" style={{ marginTop: 14 }}>📷 {tr('photo_never_stored')}</span>
         </div>
       </IonContent>

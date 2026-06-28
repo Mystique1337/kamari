@@ -279,6 +279,8 @@ export default function Welcome() {
             <a href="https://github.com/Mystique1337/kamari" target="_blank" rel="noreferrer"><IonIcon icon={logoGithub} /> GitHub</a>
             <button className="link" onClick={() => history.push('/docs')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}>Docs</button>
             <button className="link" onClick={() => history.push('/pricing')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}>Pricing</button>
+            <button className="link" onClick={() => history.push('/privacy')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}>Privacy</button>
+            <button className="link" onClick={() => history.push('/terms')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}>Terms</button>
             <span>Apache-2.0. An estimate, not a legal determination.</span>
           </div>
         </footer>

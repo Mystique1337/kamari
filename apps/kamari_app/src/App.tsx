@@ -17,6 +17,8 @@ const Docs = lazy(() => import('./pages/Docs'));
 const DeveloperDashboard = lazy(() => import('./pages/DeveloperDashboard'));
 const ApiKeys = lazy(() => import('./pages/ApiKeys'));
 const UsageLogs = lazy(() => import('./pages/UsageLogs'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const Terms = lazy(() => import('./pages/Terms'));
 
 function Loading() {
   return (
@@ -44,6 +46,8 @@ export default function App() {
             <Route exact path="/developer" component={DeveloperDashboard} />
             <Route exact path="/developer/keys" component={ApiKeys} />
             <Route exact path="/developer/usage" component={UsageLogs} />
+            <Route exact path="/privacy" component={Privacy} />
+            <Route exact path="/terms" component={Terms} />
             <Route exact path="/">
               <Redirect to="/welcome" />
             </Route>
