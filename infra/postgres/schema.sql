@@ -1,5 +1,5 @@
 -- Kámárí database schema — designed to live in a dedicated sub-schema `kamari`
--- inside an existing (self-hosted) Postgres/Supabase instance.
+-- inside an existing (self-hosted) Postgres instance with pgvector. Supabase is no longer required.
 --
 -- Apply:
 --   psql "$DATABASE_URL" -f infra/supabase/schema.sql
@@ -13,6 +13,7 @@ create schema if not exists kamari;
 set search_path = kamari, public;
 
 create extension if not exists pgcrypto;  -- gen_random_uuid()
+create extension if not exists vector;    -- pgvector: face embeddings for 1:1 verification
 
 -- Organizations & users -------------------------------------------------------
 create table if not exists kamari.organizations (
@@ -23,10 +24,13 @@ create table if not exists kamari.organizations (
 
 create table if not exists kamari.app_users (
   id           uuid primary key default gen_random_uuid(),
-  auth_id      text unique,                    -- maps to your Supabase auth user id
   organization_id uuid references kamari.organizations(id) on delete cascade,
-  email        text,
+  email        text unique not null,
+  hashed_password text not null,           -- argon2 (managed by the auth layer)
   role         text not null default 'member', -- member | admin
+  is_active    boolean not null default true,
+  is_verified  boolean not null default false,
+  is_superuser boolean not null default false,
   created_at   timestamptz not null default now()
 );
 
@@ -93,6 +97,20 @@ create table if not exists kamari.verification_sessions (
   consent_given boolean not null default false,
   created_at   timestamptz not null default now()
 );
+
+-- Face embeddings for 1:1 verification ONLY (pgvector). Opt-in; NOT stored by default.
+create table if not exists kamari.face_embeddings (
+  id           uuid primary key default gen_random_uuid(),
+  organization_id uuid references kamari.organizations(id) on delete cascade,
+  subject_ref  text not null,                 -- caller-provided opaque ref (not a name/PII)
+  embedding    vector(512) not null,          -- encrypt at rest where possible
+  consent_given boolean not null default false,
+  created_at   timestamptz not null default now()
+);
+-- Index supports fast distance math, but queries MUST be scoped to subject_ref:
+-- Kámárí does 1:1 verification only — never 1:N face search.
+create index if not exists face_emb_idx on kamari.face_embeddings
+  using ivfflat (embedding vector_cosine_ops) with (lists = 100);
 
 -- Benchmarks ------------------------------------------------------------------
 create table if not exists kamari.benchmark_runs (

@@ -7,7 +7,7 @@ stop wherever you have enough.
 ```
 Tier 0  App on mock ........... 0 setup, runs today
 Tier 1  App ↔ local gateway ... no accounts
-Tier 2  Supabase (sub-schema) . your self-hosted Postgres
+Tier 2  Postgres + pgvector ... your self-hosted DB (+ app-owned auth)
 Tier 3  Railway (gateway live) . Railway account
 Tier 4  Modal (real models) ... Modal account + a trained model (needs datasets)
 Tier 5  Native Android/iOS .... Android Studio / Xcode
@@ -50,25 +50,28 @@ age check is a real HTTP call to the gateway.
 
 ---
 
-## Tier 2 — Supabase (self-hosted, sub-schema)
+## Tier 2 — Postgres + pgvector (self-hosted)
 
-You only need a **sub-schema** in your existing self-hosted Postgres — no new project.
+Plain self-hosted Postgres with pgvector — **Supabase is no longer required**. Everything
+lives in a dedicated `kamari` schema, so it can share an existing database.
 
-**1. Apply the schema** (creates schema `kamari` + all tables):
+**1. Apply the schema** (creates schema `kamari`, `pgcrypto` + `vector` extensions, tables):
 ```bash
-psql "postgresql://USER:PASSWORD@HOST:5432/DBNAME" -f infra/supabase/schema.sql
+psql "postgresql://USER:PASSWORD@HOST:5432/DBNAME" -f infra/postgres/schema.sql
 ```
-(or paste `infra/supabase/schema.sql` into your self-hosted Supabase SQL editor.)
 
-**2. Give the gateway a connection** — it talks to Postgres directly (so it does not need
-PostgREST to expose the schema). Set in the gateway env:
+**2. Give the gateway a connection** (direct Postgres). Set in the gateway env:
 ```
 DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/DBNAME
 SUPABASE_DB_SCHEMA=kamari
 ```
-The gateway will log request **metadata only** (decision, model version, request id) to
+The gateway logs request **metadata only** (decision, model version, request id) to
 `kamari.inference_requests` — never the image. *(Write-path wiring is the next increment;
 the schema + env are ready now.)*
+
+**3. Auth** — since Supabase Auth is gone, the gateway owns authentication. Recommended:
+`fastapi-users` (JWT over `kamari.app_users`, argon2 passwords) for humans, plus the
+existing hashed API keys for machines. `pgvector` powers 1:1 face verification later.
 
 > Because you connect with a privileged role, the gateway enforces org-scoping in code.
 > RLS policies in `schema.sql` are defense-in-depth for any anon/direct access.

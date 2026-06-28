@@ -2,7 +2,7 @@
 
 African-focused **age-gating and face-verification** system, built web-first and shipped as web app, PWA, Android, and iOS from one codebase.
 
-**Core split:** a small calibrated **CNN** makes the age-gate decision; **Gemma** explains it (multilingual, policy, strict JSON); **FastAPI** orchestrates; **Ionic React + Capacitor** is the client; **Supabase**, **Modal**, **Railway**, **n8n**, and **Hugging Face** provide data, compute, hosting, automation, and public artifacts.
+**Core split:** a small calibrated **CNN** makes the age-gate decision; **Gemma** explains it (multilingual, policy, strict JSON); **FastAPI** orchestrates; **Ionic React + Capacitor** is the client; **Postgres + pgvector**, **Modal**, **Railway**, **n8n**, and **Hugging Face** provide data, compute, hosting, automation, and public artifacts.
 
 See `kamari_web_first_master_plan (2).md` for the full build plan.
 
@@ -22,7 +22,7 @@ data/   training/{cnn, gemma}   benchmarks/   infra/   docs/
 No raw face images or embeddings stored by default · metadata + audit logs only · retention visible in API and UI · **1:1 verification only, never 1:N face search** · every age result is an estimate, not a legal determination.
 
 ## Setup
-- **[`docs/SETUP.md`](docs/SETUP.md)** — tier-by-tier setup: app, local gateway, self-hosted Supabase sub-schema, Railway, Modal, native.
+- **[`docs/SETUP.md`](docs/SETUP.md)** — tier-by-tier setup: app, local gateway, self-hosted Postgres + pgvector, Railway, Modal, native.
 
 ## Repo tooling
 - **Skills matrix:** [`docs/skills_matrix.md`](docs/skills_matrix.md) — full skill inventory + installed Claude Code plugins + project skills.
