@@ -86,9 +86,12 @@ export async function usageLogs(token: string, limit = 50): Promise<UsageLog[]> 
   return res.json();
 }
 
-export async function sendWelcome(token: string): Promise<void> {
+export async function sendWelcome(email: string): Promise<void> {
   try {
-    await fetch(`${API_URL}/v1/account/welcome`, { method: 'POST', headers: authHeaders(token) });
+    await fetch(`${API_URL}/v1/account/welcome`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
   } catch { /* best effort */ }
 }
 

@@ -9,7 +9,7 @@ import { useAuth } from '../lib/auth';
 import { sendWelcome } from '../lib/api';
 
 export default function Login() {
-  const { configured, signIn, signUp, getToken } = useAuth();
+  const { configured, signIn, signUp } = useAuth();
   const history = useHistory();
   const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
@@ -28,12 +28,12 @@ export default function Login() {
         history.replace('/developer');
       } else {
         const { needsConfirmation } = await signUp(email, password);
+        // Send our welcome email via n8n regardless of confirmation state.
+        await sendWelcome(email);
         if (needsConfirmation) {
-          setNotice('Check your inbox to confirm your email, then sign in.');
+          setNotice('Account created. We sent you a welcome email. Confirm your address, then sign in.');
           setMode('signin');
         } else {
-          const token = getToken();
-          if (token) await sendWelcome(token);
           history.replace('/developer');
         }
       }
