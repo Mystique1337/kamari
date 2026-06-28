@@ -139,6 +139,27 @@ def train(epochs: int = 3, lr: float = 2e-4, rank: int = 32):
     return {"eval": eval_metrics}
 
 
+def _greedy_decode(model, tok, prompt, max_new=256):
+    """Manual KV-cached greedy decode — robust to Gemma 4's multimodal logits shape."""
+    import torch
+    enc = tok(prompt, return_tensors="pt").to(model.device)
+    attn, cur, past, out_ids = enc["attention_mask"], enc["input_ids"], None, []
+    with torch.no_grad():
+        for _ in range(max_new):
+            res = model(input_ids=cur, attention_mask=attn, past_key_values=past, use_cache=True)
+            logits = res.logits
+            while logits.dim() > 2:
+                logits = logits[:, -1, :] if logits.dim() == 3 else logits[:, 0]
+            nxt = int(logits[0].argmax())
+            if tok.eos_token_id is not None and nxt == tok.eos_token_id:
+                break
+            out_ids.append(nxt)
+            past = res.past_key_values
+            cur = torch.tensor([[nxt]], device=model.device)
+            attn = torch.cat([attn, torch.ones((1, 1), dtype=attn.dtype, device=attn.device)], dim=-1)
+    return tok.decode(out_ids, skip_special_tokens=True)
+
+
 def _evaluate(model, tok, eval_ds, to_text, n=200):
     """JSON validity, schema compliance, policy/decision consistency, language correctness."""
     import json
@@ -151,10 +172,7 @@ def _evaluate(model, tok, eval_ds, to_text, n=200):
         try:
             ex = eval_ds[i]
             prompt = to_text(ex, with_answer=False)
-            ids = tok(prompt, return_tensors="pt").to(model.device)
-            with torch.no_grad():
-                out = model.generate(**ids, max_new_tokens=256, do_sample=False, pad_token_id=tok.pad_token_id)
-            text = tok.decode(out[0][ids["input_ids"].shape[1]:], skip_special_tokens=True)
+            text = _greedy_decode(model, tok, prompt)
             gold = ex["output"]
             obj = json.loads(text[text.index("{"):text.rindex("}") + 1])
             stats["json_valid"] += 1
