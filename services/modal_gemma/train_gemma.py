@@ -73,9 +73,14 @@ def train(epochs: int = 3, lr: float = 2e-4, rank: int = 32):
         tok.pad_token = tok.eos_token
     bnb = BitsAndBytesConfig(load_in_4bit=True, bnb_4bit_quant_type="nf4",
                              bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_use_double_quant=True)
-    model = AutoModelForCausalLM.from_pretrained(
-        MODEL_ID, quantization_config=bnb, device_map="auto", torch_dtype=torch.bfloat16,
-        attn_implementation="eager", token=token)
+    _load_kw = dict(quantization_config=bnb, device_map="auto", torch_dtype=torch.bfloat16,
+                    attn_implementation="eager", token=token)
+    try:
+        model = AutoModelForCausalLM.from_pretrained(MODEL_ID, **_load_kw)
+    except Exception as e:  # gemma-3-4b-it is a multimodal checkpoint -> use its class, train text-only
+        print("AutoModelForCausalLM failed, loading Gemma3 multimodal (text-only training):", e)
+        from transformers import Gemma3ForConditionalGeneration
+        model = Gemma3ForConditionalGeneration.from_pretrained(MODEL_ID, **_load_kw)
 
     def to_text(ex, with_answer=True):
         user = f"{ex['instruction']}\nInput: {json.dumps(ex['input'], ensure_ascii=False)}"

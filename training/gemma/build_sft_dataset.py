@@ -128,9 +128,26 @@ def main():
     args = ap.parse_args()
 
     rng = random.Random(args.seed)
-    rows = [sample_row(rng) for _ in range(args.n)]
-    split = int(len(rows) * 0.9)
-    for path, chunk in [(args.out, rows[:split]), (args.eval_out, rows[split:])]:
+    # Balance across reason codes (random sampling skews to ALLOW); balanced labels +
+    # uniform languages give the adapter even coverage -> better schema/policy accuracy.
+    from collections import defaultdict
+    pool = [sample_row(rng) for _ in range(args.n * 6)]
+    by_reason = defaultdict(list)
+    for r in pool:
+        by_reason[r["output"]["reason_code"]].append(r)
+    per = max(1, args.n // len(by_reason))
+    balanced = []
+    for reason, items in by_reason.items():
+        rng.shuffle(items)
+        while len(items) < per:
+            items = items + items
+        balanced += items[:per]
+    rng.shuffle(balanced)
+    print("reason-code balance:", {k: len(v) for k, v in by_reason.items()})
+    print("balanced rows:", len(balanced))
+
+    split = int(len(balanced) * 0.9)
+    for path, chunk in [(args.out, balanced[:split]), (args.eval_out, balanced[split:])]:
         with open(path, "w", encoding="utf-8") as fh:
             for r in chunk:
                 fh.write(json.dumps(r, ensure_ascii=False) + "\n")
