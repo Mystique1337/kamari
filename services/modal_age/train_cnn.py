@@ -50,6 +50,12 @@ def train(epochs: int = 20, backbone: str = "mobilenetv3_large_100",
 
     # --- Pull dataset from HF ---
     data_dir = snapshot_download(f"{ns}/kamari-faces-v0", repo_type="dataset", token=token)
+    # Crops may be packed as a single tar (PACK_CROPS in the data notebook) — extract once.
+    _tar = os.path.join(data_dir, "crops_v0.tar")
+    if os.path.exists(_tar) and not os.path.isdir(os.path.join(data_dir, "crops")):
+        import tarfile
+        with tarfile.open(_tar) as _tf:
+            _tf.extractall(data_dir)
     df = pd.read_parquet(os.path.join(data_dir, "manifests", "manifest_train_v0.parquet"))
     df = df[df["age"].notna()].reset_index(drop=True)
     # Skip rows whose crop didn't make it to HF (e.g. ALLOW_PRIVATE_CROP_UPLOAD=0),
