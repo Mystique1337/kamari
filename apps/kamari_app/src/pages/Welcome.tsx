@@ -47,15 +47,28 @@ export default function Welcome() {
             <IonIcon slot="start" icon={codeSlashOutline} />
             I am a developer
           </IonButton>
-          <IonButton
-            expand="block"
-            fill="clear"
-            size="small"
-            color="medium"
-            onClick={() => history.push('/pricing')}
-          >
-            View pricing
-          </IonButton>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <IonButton
+              expand="block"
+              fill="clear"
+              size="small"
+              color="medium"
+              style={{ flex: 1 }}
+              onClick={() => history.push('/docs')}
+            >
+              Developer docs
+            </IonButton>
+            <IonButton
+              expand="block"
+              fill="clear"
+              size="small"
+              color="medium"
+              style={{ flex: 1 }}
+              onClick={() => history.push('/pricing')}
+            >
+              Pricing
+            </IonButton>
+          </div>
           <p className="kamari-muted kamari-center" style={{ fontSize: '.8rem' }}>
             An estimate, not a legal determination.
           </p>

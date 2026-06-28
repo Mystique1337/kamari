@@ -4,6 +4,7 @@ import {
 } from '@ionic/react';
 import {
   keyOutline, pulseOutline, shieldCheckmarkOutline, serverOutline, logOutOutline, sparklesOutline,
+  codeSlashOutline,
 } from 'ionicons/icons';
 import { useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -119,6 +120,9 @@ export default function DeveloperDashboard() {
         </IonButton>
         <IonButton expand="block" fill="outline" color="primary" onClick={() => history.push('/developer/usage')}>
           <IonIcon slot="start" icon={pulseOutline} /> View usage logs
+        </IonButton>
+        <IonButton expand="block" fill="clear" color="primary" onClick={() => history.push('/docs')}>
+          <IonIcon slot="start" icon={codeSlashOutline} /> API docs and examples
         </IonButton>
       </IonContent>
     </IonPage>
