@@ -4,6 +4,9 @@ All Kámárí artifacts live under a single namespace (HF_NAMESPACE), e.g.:
     <ns>/dataset-registry-v0   <ns>/cnn-age-v0   <ns>/gemma-explain-lora-v0
     <ns>/kamari-safe-open-v0
 
+Uploads use temp FILES (not in-memory buffers) so Xet storage can chunk large parquet,
+and every commit is retried with backoff to survive transient HF 5xx / timeouts.
+
 Usage:
     from data.hf_utils import HF
     hf = HF()                              # reads HF_TOKEN / HF_NAMESPACE from env
@@ -12,11 +15,31 @@ Usage:
 """
 from __future__ import annotations
 
-import io
 import os
+import tempfile
+import time
 from typing import Optional
 
 import pandas as pd
+
+
+def _retry(fn, *args, _tries: int = 6, _what: str = "HF op", **kwargs):
+    """Retry an HF call on transient errors (5xx / timeouts / connection resets)."""
+    last = None
+    for i in range(_tries):
+        try:
+            return fn(*args, **kwargs)
+        except Exception as e:  # noqa: BLE001 — HfHubHTTPError, httpx timeouts, etc.
+            last = e
+            msg = str(e)
+            transient = any(s in msg for s in ("504", "502", "503", "500", "Time-out",
+                                               "timeout", "Connection", "Gateway"))
+            if i == _tries - 1 or not transient:
+                raise
+            wait = min(60, 2 ** i)
+            print(f"[hf_utils] {_what} failed ({type(e).__name__}); retry {i + 1}/{_tries} in {wait}s")
+            time.sleep(wait)
+    raise last  # pragma: no cover
 
 
 class HF:
@@ -33,37 +56,42 @@ class HF:
 
     def ensure_repo(self, name: str, repo_type: str = "dataset", private: bool = True):
         rid = self.repo_id(name)
-        self.api.create_repo(rid, repo_type=repo_type, private=private,
-                             exist_ok=True, token=self.token)
+        _retry(self.api.create_repo, rid, repo_type=repo_type, private=private,
+               exist_ok=True, token=self.token, _what=f"create_repo {rid}")
         return rid
 
     def push_manifest(self, df: pd.DataFrame, name: str, split: str = "train",
                       private: bool = True) -> str:
-        """Upload a manifest DataFrame as parquet to a dataset repo."""
+        """Upload a manifest DataFrame as parquet (via temp file so Xet handles big files)."""
         rid = self.ensure_repo(name, "dataset", private)
-        buf = io.BytesIO()
-        df.to_parquet(buf, index=False)
-        buf.seek(0)
-        self.api.upload_file(
-            path_or_fileobj=buf,
-            path_in_repo=f"manifests/manifest_{split}_v0.parquet",
-            repo_id=rid, repo_type="dataset", token=self.token,
-            commit_message=f"Add {split} manifest ({len(df)} rows)",
-        )
+        with tempfile.NamedTemporaryFile(suffix=".parquet", delete=False) as tmp:
+            path = tmp.name
+        try:
+            df.to_parquet(path, index=False)
+            _retry(self.api.upload_file, path_or_fileobj=path,
+                   path_in_repo=f"manifests/manifest_{split}_v0.parquet",
+                   repo_id=rid, repo_type="dataset", token=self.token,
+                   commit_message=f"Add {split} manifest ({len(df)} rows)",
+                   _what=f"upload manifest_{split} -> {rid}")
+        finally:
+            if os.path.exists(path):
+                os.remove(path)
         return rid
 
     def upload_file(self, local_path: str, name: str, path_in_repo: str,
                     repo_type: str = "dataset", private: bool = True) -> str:
         rid = self.ensure_repo(name, repo_type, private)
-        self.api.upload_file(path_or_fileobj=local_path, path_in_repo=path_in_repo,
-                             repo_id=rid, repo_type=repo_type, token=self.token)
+        _retry(self.api.upload_file, path_or_fileobj=local_path, path_in_repo=path_in_repo,
+               repo_id=rid, repo_type=repo_type, token=self.token,
+               _what=f"upload {path_in_repo} -> {rid}")
         return rid
 
     def upload_folder(self, folder: str, name: str, repo_type: str = "model",
                       path_in_repo: str = "", private: bool = True) -> str:
         rid = self.ensure_repo(name, repo_type, private)
-        self.api.upload_folder(folder_path=folder, path_in_repo=path_in_repo,
-                               repo_id=rid, repo_type=repo_type, token=self.token)
+        _retry(self.api.upload_folder, folder_path=folder, path_in_repo=path_in_repo,
+               repo_id=rid, repo_type=repo_type, token=self.token,
+               _what=f"upload_folder -> {rid}")
         return rid
 
 
