@@ -32,7 +32,13 @@ VALID_DECISIONS = {"allow", "block", "secondary_check", "recapture"}
 SAFETY_NOTE = "This is an estimate, not a legal age determination."
 
 
-@app.cls(image=image, gpu=GPU, secrets=[hf_secret], min_containers=0)
+# Always-on: keep one warm GPU container so explanations are instant (no cold start).
+# Override with KAMARI_GEMMA_MIN_CONTAINERS=0 to let it scale to zero and save cost.
+MIN_CONTAINERS = int(os.environ.get("KAMARI_GEMMA_MIN_CONTAINERS", "1"))
+
+
+@app.cls(image=image, gpu=GPU, secrets=[hf_secret],
+         min_containers=MIN_CONTAINERS, scaledown_window=300)
 class Gemma:
     @modal.enter()
     def load(self):

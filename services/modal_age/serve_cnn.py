@@ -30,7 +30,13 @@ MODEL_VERSION = "cnn_v0.1.0"
 BACKBONE = os.environ.get("CNN_BACKBONE", "tf_efficientnetv2_s")
 
 
-@app.cls(image=image, cpu=2.0, secrets=[hf_secret], min_containers=0)
+# Always-on: keep one warm container so age checks never pay a cold start.
+# Override with KAMARI_CNN_MIN_CONTAINERS=0 to let it scale to zero and save cost.
+MIN_CONTAINERS = int(os.environ.get("KAMARI_CNN_MIN_CONTAINERS", "1"))
+
+
+@app.cls(image=image, cpu=2.0, secrets=[hf_secret],
+         min_containers=MIN_CONTAINERS, scaledown_window=300)
 class CNN:
     @modal.enter()
     def load(self):
