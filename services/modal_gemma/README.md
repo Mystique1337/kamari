@@ -12,11 +12,14 @@ Gemma explains decisions — it never estimates age and never invents decision c
 | `../../training/gemma/output_schema.json` | The strict output schema |
 
 ## Train
+Reads SFT data from HF `gemma-sft-v0`, tracks in **W&B**, and uploads the **adapter +
+`metrics_v0.json` + card** back to HF.
 ```bash
 python training/gemma/build_sft_dataset.py --n 4000
-modal volume put kamari-data training/gemma/sft_train.jsonl sft_train.jsonl
-modal volume put kamari-data training/gemma/sft_eval.jsonl  sft_eval.jsonl
-# HF_TOKEN must have accepted the Gemma licence; set GEMMA_MODEL_ID for your variant
+huggingface-cli upload <ns>/gemma-sft-v0 training/gemma/sft_train.jsonl sft_train.jsonl --repo-type dataset
+huggingface-cli upload <ns>/gemma-sft-v0 training/gemma/sft_eval.jsonl  sft_eval.jsonl  --repo-type dataset
+# HF_TOKEN must accept the Gemma licence; set GEMMA_MODEL_ID for your variant; WANDB_API_KEY optional
+modal secret create kamari-hf HF_TOKEN=... HF_NAMESPACE=... WANDB_API_KEY=... WANDB_PROJECT=kamari
 modal run services/modal_gemma/train_gemma.py --epochs 3
 ```
 
