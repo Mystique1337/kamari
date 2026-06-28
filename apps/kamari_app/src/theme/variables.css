@@ -1,0 +1,58 @@
+/* Kámárí design tokens — Adire indigo base with terracotta / gold / green accents.
+   Layered over Ionic's CSS variables so Ionic components inherit the theme. */
+
+:root {
+  /* --- Brand palette (Adire indigo + West African earth) --- */
+  --kamari-indigo:        #213A6B;  /* primary — adire indigo */
+  --kamari-indigo-deep:   #14213D;  /* darkest — splash / headers */
+  --kamari-indigo-soft:   #36518a;
+  --kamari-terracotta:    #C65D3B;  /* secondary — clay/laterite */
+  --kamari-gold:          #E8B84B;  /* tertiary — brass/gold */
+  --kamari-green:         #2F6B4F;  /* success — palm green */
+  --kamari-clay:          #8A4B38;
+  --kamari-cream:         #F6EFE2;  /* warm background */
+  --kamari-cream-2:       #EFE4D2;
+  --kamari-ink:           #2A2118;  /* warm near-black text */
+  --kamari-ink-soft:      #6A5E4E;
+
+  /* --- Ionic theme mapping --- */
+  --ion-color-primary: var(--kamari-indigo);
+  --ion-color-primary-rgb: 33, 58, 107;
+  --ion-color-primary-shade: #1d3460;
+  --ion-color-primary-tint: #374f7c;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+
+  --ion-color-secondary: var(--kamari-terracotta);
+  --ion-color-secondary-rgb: 198, 93, 59;
+  --ion-color-secondary-contrast: #ffffff;
+  --ion-color-secondary-shade: #ae5234;
+  --ion-color-secondary-tint: #cc6d4f;
+
+  --ion-color-tertiary: var(--kamari-gold);
+  --ion-color-tertiary-rgb: 232, 184, 75;
+  --ion-color-tertiary-contrast: #2a2118;
+
+  --ion-color-success: var(--kamari-green);
+  --ion-color-success-rgb: 47, 107, 79;
+  --ion-color-warning: var(--kamari-gold);
+  --ion-color-danger: #B83A2E;
+
+  --ion-background-color: var(--kamari-cream);
+  --ion-background-color-rgb: 246, 239, 226;
+  --ion-text-color: var(--kamari-ink);
+  --ion-text-color-rgb: 42, 33, 24;
+  --ion-toolbar-background: var(--kamari-indigo);
+  --ion-toolbar-color: var(--kamari-cream);
+  --ion-card-background: #ffffff;
+
+  /* --- Type --- */
+  --kamari-font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --kamari-font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --ion-font-family: var(--kamari-font-body);
+
+  /* --- Shape --- */
+  --kamari-radius: 18px;
+  --kamari-radius-lg: 28px;
+  --kamari-shadow: 0 14px 40px -18px rgba(20, 33, 61, 0.45);
+}

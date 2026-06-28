@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Kámárí">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#36518a"/>
+      <stop offset="1" stop-color="#14213D"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="url(#bg)"/>
+  <!-- Adinkra-inspired diamond + radiating marks -->
+  <g fill="none" stroke="#E8B84B" stroke-width="14" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M256 96 416 256 256 416 96 256 Z"/>
+    <path d="M256 168 344 256 256 344 168 256 Z"/>
+    <path d="M256 56v36M256 420v36M56 256h36M420 256h36"/>
+  </g>
+  <circle cx="256" cy="256" r="26" fill="#C65D3B"/>
+</svg>

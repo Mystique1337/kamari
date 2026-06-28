@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Kámárí">
+  <rect width="512" height="512" fill="#14213D"/>
+  <g fill="none" stroke="#E8B84B" stroke-width="12" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M256 136 376 256 256 376 136 256 Z"/>
+    <path d="M256 192 320 256 256 320 192 256 Z"/>
+    <path d="M256 108v28M256 376v28M108 256h28M376 256h28"/>
+  </g>
+  <circle cx="256" cy="256" r="20" fill="#C65D3B"/>
+</svg>

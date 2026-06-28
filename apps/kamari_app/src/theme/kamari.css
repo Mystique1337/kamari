@@ -1,0 +1,107 @@
+/* Kámárí component styling + Adinkra-inspired pattern system. */
+
+h1, h2, h3, .kamari-display {
+  font-family: var(--kamari-font-display);
+  letter-spacing: -0.01em;
+}
+
+ion-content.kamari-bg {
+  --background: var(--kamari-cream);
+}
+
+/* Indigo hero surface used on Welcome / Result headers */
+.kamari-hero {
+  background:
+    radial-gradient(120% 90% at 80% -10%, var(--kamari-indigo-soft) 0%, transparent 55%),
+    linear-gradient(160deg, var(--kamari-indigo) 0%, var(--kamari-indigo-deep) 100%);
+  color: var(--kamari-cream);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Adinkra/Adire pattern overlay — subtle geometric diamonds + dots, indigo on cream
+   (or gold on indigo when placed inside .kamari-hero). Encoded as an SVG tile. */
+.kamari-pattern::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.12;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%23E8B84B' stroke-width='1.4'%3E%3Cpath d='M36 6l30 30-30 30L6 36z'/%3E%3Cpath d='M36 22l14 14-14 14-14-14z'/%3E%3Ccircle cx='36' cy='36' r='3' fill='%23E8B84B' stroke='none'/%3E%3Cpath d='M0 36h12M60 36h12M36 0v12M36 60v12'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 72px 72px;
+  pointer-events: none;
+}
+
+/* Cream-surface variant of the pattern (indigo glyphs) */
+.kamari-pattern-ink::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%23213A6B' stroke-width='1.4'%3E%3Cpath d='M36 6l30 30-30 30L6 36z'/%3E%3Cpath d='M36 22l14 14-14 14-14-14z'/%3E%3Ccircle cx='36' cy='36' r='3' fill='%23213A6B' stroke='none'/%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.08;
+}
+
+/* Kente-style accent rule */
+.kamari-kente {
+  height: 6px;
+  border-radius: 6px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--kamari-gold) 0 14px,
+    var(--kamari-terracotta) 14px 28px,
+    var(--kamari-green) 28px 42px,
+    var(--kamari-indigo) 42px 56px
+  );
+}
+
+/* Cards */
+.kamari-card {
+  background: #fff;
+  border-radius: var(--kamari-radius);
+  box-shadow: var(--kamari-shadow);
+  border: 1px solid rgba(33, 58, 107, 0.06);
+}
+
+/* Pill buttons */
+ion-button.kamari-btn {
+  --border-radius: 999px;
+  --box-shadow: 0 10px 24px -12px rgba(198, 93, 59, 0.7);
+  --padding-top: 20px;
+  --padding-bottom: 20px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
+/* Retention / privacy badge */
+.kamari-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: rgba(47, 107, 79, 0.12);
+  color: var(--kamari-green);
+}
+.kamari-badge.on-dark {
+  background: rgba(246, 239, 226, 0.16);
+  color: var(--kamari-cream);
+}
+
+/* Decision colour chips */
+.decision-allow   { background: rgba(47,107,79,.14);  color: var(--kamari-green); }
+.decision-block   { background: rgba(184,58,46,.14);  color: #B83A2E; }
+.decision-check   { background: rgba(232,184,75,.18); color: #9a7a1e; }
+.decision-recapture { background: rgba(33,58,107,.12); color: var(--kamari-indigo); }
+
+.kamari-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--kamari-gold);
+}
+
+.kamari-muted { color: var(--kamari-ink-soft); }
+
+.kamari-stack > * + * { margin-top: 14px; }
+.kamari-center { text-align: center; }
+.kamari-pad { padding: 22px; }
