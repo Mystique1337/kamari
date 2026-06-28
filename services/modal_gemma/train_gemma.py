@@ -102,7 +102,7 @@ def train(epochs: int = 3, lr: float = 2e-4, rank: int = 32):
         learning_rate=lr, lr_scheduler_type="cosine", warmup_ratio=0.03, weight_decay=0.01,
         bf16=True, tf32=True, gradient_checkpointing=False,  # H200 has the memory; skip the recompute
         dataloader_num_workers=8, dataloader_pin_memory=True,
-        packing=True, neftune_noise_alpha=5, max_seq_length=1024,
+        packing=True, neftune_noise_alpha=5, max_length=1024,  # TRL renamed max_seq_length->max_length
         logging_steps=20, eval_strategy="epoch", save_strategy="epoch", save_total_limit=2,
         load_best_model_at_end=True, metric_for_best_model="eval_loss", greater_is_better=False,
         run_name=f"gemma4b-lora-r{rank}", report_to=["wandb"] if use_wandb else [],
