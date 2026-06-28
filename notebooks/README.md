@@ -52,6 +52,8 @@ else is needed to kick off CNN training on Modal.
 The v2 notebook also writes `AFRICAN_TAILORING_REPORT.md`, `BENCHMARK_CARD.md`, and fixed
 benchmark split manifests for African signal, Black subset, dark-skin, 13–21 boundary, and
 low-quality-camera slices.
+It also writes `pipeline_dataset_audit.csv/md`, which shows whether each planned dataset
+downloaded, produced candidate manifest rows, and is ready for preprocessing/HF handoff.
 
 ## Adding a dataset
 Write `data/adapters/<name>.py` exposing `iter_rows(root)` that yields `make_row(...)`
