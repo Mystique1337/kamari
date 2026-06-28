@@ -89,6 +89,28 @@ def train(epochs: int = 30, backbone: str = "tf_efficientnetv2_s",
     if not len(df):
         raise RuntimeError("No training crops found — set ALLOW_PRIVATE_CROP_UPLOAD=1 in the data notebook.")
 
+    # ---- data-integrity guard (defends against mis-parsed/categorical ages) ----
+    # Per-dataset age audit so bad sources are visible (e.g. filename-as-age -> fake toddlers).
+    audit = (df.assign(_u13=(df["age"] < 13).astype(float))
+               .groupby("dataset")["age"]
+               .agg(n="size", amin="min", amax="max", amean="mean", nunique="nunique"))
+    audit["pct_under13"] = df.assign(u=(df["age"] < 13)).groupby("dataset")["u"].mean()
+    print("per-dataset age audit:\n", audit.round(2).to_string())
+    # Train ONLY on datasets with verified exact-age parsing (override via env).
+    trusted = {x.strip() for x in os.environ.get(
+        "KAMARI_TRUSTED_AGE_DATASETS", "UTKFace,APPA-REAL,FG-NET,IMDB-WIKI").split(",") if x.strip()}
+    keep = df["dataset"].isin(trusted) & df["age"].between(1, 100)
+    if "age_exact" in df:
+        keep &= (df["age_exact"] == True)
+    if (~keep).any():
+        print("dropped (untrusted / implausible age):", df.loc[~keep, "dataset"].value_counts().to_dict())
+    df = df[keep].reset_index(drop=True)
+    if not len(df):
+        raise RuntimeError(
+            "No trusted exact-age rows after integrity filter. "
+            "Set KAMARI_TRUSTED_AGE_DATASETS to your verified-exact-age datasets.")
+    print(f"trusted training rows: {len(df)} from {sorted(set(df['dataset']))}")
+
     def _holdout(key):
         return (int(hashlib.md5(str(key).encode()).hexdigest()[:8], 16) / 0xFFFFFFFF) < val_frac
     key = df["subject_id"].where(df["subject_id"].notna() & (df["subject_id"].astype(str) != ""), df["image_id"])
