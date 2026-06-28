@@ -164,3 +164,10 @@ alter table kamari.audit_events       enable row level security;
 -- Example org-scoped policy (requires a JWT claim `org_id`); adjust to your auth setup:
 -- create policy org_isolation on kamari.inference_requests
 --   using (organization_id::text = current_setting('request.jwt.claims', true)::jsonb->>'org_id');
+
+-- PostgREST/REST access — let the Supabase roles reach the kamari schema.
+grant usage on schema kamari to anon, authenticated, service_role;
+grant all on all tables in schema kamari to service_role;
+grant all on all sequences in schema kamari to service_role;
+alter default privileges in schema kamari grant all on tables to service_role;
+alter default privileges in schema kamari grant all on sequences to service_role;
