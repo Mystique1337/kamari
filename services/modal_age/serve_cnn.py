@@ -19,7 +19,9 @@ from fastapi import File, UploadFile
 
 image = (
     modal.Image.debian_slim(python_version="3.11")
-    .pip_install("torch", "timm", "huggingface_hub", "pillow", "numpy", "fastapi[standard]")
+    .apt_install("libgl1", "libglib2.0-0")  # OpenCV runtime libs
+    .pip_install("torch", "timm", "huggingface_hub", "pillow", "numpy",
+                 "opencv-python-headless", "fastapi[standard]")
 )
 app = modal.App("kamari-cnn-serve", image=image)
 hf_secret = modal.Secret.from_name("kamari-hf")
@@ -67,6 +69,14 @@ class CNN:
         self.torch = torch
         self.model = model
 
+        # Face detector: the model trained on face crops, so we detect + crop the face
+        # before inference (matches training) and base quality on the real face, not the
+        # whole frame. This stops every photo from failing the quality gate.
+        import cv2
+        self.cv2 = cv2
+        self.cascade = cv2.CascadeClassifier(
+            cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+
     def _infer(self, image_bytes: bytes) -> dict:
         import io
         import numpy as np
@@ -80,10 +90,30 @@ class CNN:
             return {"estimated_age": 0.0, "p_under_18": 0.5, "uncertainty": 1.0,
                     "face_quality": 0.0, "model_version": MODEL_VERSION}
         w, h = img.size
-        s = min(w, h)
-        img = img.crop(((w - s) // 2, (h - s) // 2, (w + s) // 2, (h + s) // 2)).resize((224, 224))
-        arr = np.asarray(img, np.float32) / 255.0
-        quality = float(np.clip(np.var(np.gradient(arr.mean(2))) * 50, 0, 1))
+        cv2 = self.cv2
+        gray = cv2.cvtColor(np.asarray(img), cv2.COLOR_RGB2GRAY)
+        faces = self.cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5,
+                                              minSize=(48, 48))
+
+        # No face found: ask for a recapture (quality 0) rather than guessing on a non-face.
+        if len(faces) == 0:
+            return {"estimated_age": 0.0, "p_under_18": 0.5, "uncertainty": 1.0,
+                    "face_quality": 0.0, "faces_detected": 0, "model_version": MODEL_VERSION}
+
+        # Use the largest face. Crop with a 30% margin (matches the training crops).
+        fx, fy, fw, fh = (int(v) for v in max(faces, key=lambda f: f[2] * f[3]))
+        mx, my = int(fw * 0.3), int(fh * 0.3)
+        x0, y0 = max(0, fx - mx), max(0, fy - my)
+        x1, y1 = min(w, fx + fw + mx), min(h, fy + fh + my)
+        face = img.crop((x0, y0, x1, y1)).resize((224, 224))
+
+        arr = np.asarray(face, np.float32) / 255.0
+        # Quality from face sharpness (Laplacian variance), baselined so a detected face
+        # comfortably passes the gate and only a genuinely blurry face is asked to retake.
+        sharp = float(cv2.Laplacian(cv2.cvtColor(np.asarray(face), cv2.COLOR_RGB2GRAY),
+                                    cv2.CV_64F).var())
+        quality = float(np.clip(0.55 + sharp / 800.0, 0.0, 1.0))
+
         x = ((arr - MEAN) / STD).transpose(2, 0, 1)[None].astype(np.float32)
         with self.torch.no_grad():
             age, minor_logit, logvar = self.model(self.torch.from_numpy(x))
@@ -94,6 +124,7 @@ class CNN:
             "p_under_18": round(p_under, 3),
             "uncertainty": round(uncertainty, 3),
             "face_quality": round(quality, 3),
+            "faces_detected": int(len(faces)),
             "model_version": MODEL_VERSION,
         }
 
