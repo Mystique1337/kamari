@@ -1,0 +1,45 @@
+name: Deploy to Railway
+
+# Auto-deploys the gateway and web app to Railway on push to main.
+# Requires a repo secret RAILWAY_TOKEN (a Railway project token for project "kamari").
+# Without it, the job skips cleanly so pushes stay green.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/api/**'
+      - 'apps/kamari_app/**'
+      - '.github/workflows/deploy.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      PROJECT_ID: ec7f5aab-6b69-4907-8104-b91764134e2b
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Gate on token
+        id: gate
+        run: |
+          if [ -z "$RAILWAY_TOKEN" ]; then
+            echo "No RAILWAY_TOKEN secret set; skipping deploy."
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install Railway CLI
+        if: steps.gate.outputs.ok == 'true'
+        run: npm i -g @railway/cli
+
+      - name: Deploy API
+        if: steps.gate.outputs.ok == 'true'
+        working-directory: apps/api
+        run: railway up --service api --project "$PROJECT_ID" --environment production --ci
+
+      - name: Deploy Web
+        if: steps.gate.outputs.ok == 'true'
+        working-directory: apps/kamari_app
+        run: railway up --service web --project "$PROJECT_ID" --environment production --ci
