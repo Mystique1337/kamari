@@ -49,7 +49,7 @@ def _band(a):
     return "na"
 
 
-@app.function(gpu=GPU, cpu=16.0, memory=65536, timeout=60 * 60 * 24,
+@app.function(gpu=GPU, cpu=24.0, memory=131072, timeout=60 * 60 * 24,
               volumes={CKPT: ckpt_vol}, secrets=[hf_secret])
 def train(epochs: int = 30, backbone: str = "tf_efficientnetv2_s",
           lr: float = 3e-4, batch_size: int = 512, warmup_frac: float = 0.05,
@@ -95,27 +95,34 @@ def train(epochs: int = 30, backbone: str = "tf_efficientnetv2_s",
     if not len(df):
         raise RuntimeError("No training crops found — set ALLOW_PRIVATE_CROP_UPLOAD=1 in the data notebook.")
 
-    # ---- data-integrity guard (defends against mis-parsed/categorical ages) ----
-    # Per-dataset age audit so bad sources are visible (e.g. filename-as-age -> fake toddlers).
-    audit = (df.assign(_u13=(df["age"] < 13).astype(float))
-               .groupby("dataset")["age"]
-               .agg(n="size", amin="min", amax="max", amean="mean", nunique="nunique"))
-    audit["pct_under13"] = df.assign(u=(df["age"] < 13)).groupby("dataset")["u"].mean()
+    # ---- data-integrity guard: audit + auto label-quality gate (robust to any manifest) ----
+    audit = df.groupby("dataset")["age"].agg(n="size", amin="min", amax="max", amean="mean", nunique="nunique")
+    audit["pct_u13"] = df.assign(u=(df["age"] < 13)).groupby("dataset")["u"].mean()
     print("per-dataset age audit:\n", audit.round(2).to_string())
-    # Train ONLY on datasets with verified exact-age parsing (override via env).
-    trusted = {x.strip() for x in os.environ.get(
-        "KAMARI_TRUSTED_AGE_DATASETS", "UTKFace,APPA-REAL,FG-NET,IMDB-WIKI").split(",") if x.strip()}
-    keep = df["dataset"].isin(trusted) & df["age"].between(1, 100)
+    # Auto-detect datasets whose "age" is really categorical / an ID (the fake-toddler bug).
+    whitelist = {"UTKFace", "APPA-REAL", "FG-NET"}
+    suspect = []
+    for ds, sub in df.groupby("dataset"):
+        a = sub["age"].dropna()
+        if len(a) < 20 or ds in whitelist:
+            continue
+        if (a < 5).mean() > 0.15 or a.max() < 13 or a.nunique() <= 12 or a.mean() < 12:
+            suspect.append(ds)
+    keep = df["age"].between(1, 100)
     if "age_exact" in df:
         keep &= (df["age_exact"] == True)
+    keep &= ~df["dataset"].isin(suspect)
+    env = os.environ.get("KAMARI_TRUSTED_AGE_DATASETS", "").strip()
+    if env:  # optional hard allowlist override
+        keep &= df["dataset"].isin({x.strip() for x in env.split(",") if x.strip()})
+    if suspect:
+        print("auto-voided SUSPECT datasets (categorical/ID-as-age):", suspect)
     if (~keep).any():
-        print("dropped (untrusted / implausible age):", df.loc[~keep, "dataset"].value_counts().to_dict())
+        print("dropped rows by dataset:", df.loc[~keep, "dataset"].value_counts().to_dict())
     df = df[keep].reset_index(drop=True)
     if not len(df):
-        raise RuntimeError(
-            "No trusted exact-age rows after integrity filter. "
-            "Set KAMARI_TRUSTED_AGE_DATASETS to your verified-exact-age datasets.")
-    print(f"trusted training rows: {len(df)} from {sorted(set(df['dataset']))}")
+        raise RuntimeError("No clean exact-age rows after the integrity gate.")
+    print(f"clean training rows: {len(df)} from {sorted(set(df['dataset']))}")
 
     key = df["subject_id"].where(df["subject_id"].notna() & (df["subject_id"].astype(str) != ""), df["image_id"]).astype(str)
     hk = key.map(lambda k: int(hashlib.md5(k.encode()).hexdigest(), 16) % 10000)
