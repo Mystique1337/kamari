@@ -93,9 +93,10 @@ def train(epochs: int = 3, lr: float = 2e-4, rank: int = 32):
         keys = list(batch.keys())
         return [to_text({k: batch[k][i] for k in keys}) for i in range(len(batch[keys[0]]))]
 
+    # Gemma 4 wraps projections in Gemma4ClippableLinear; "all-linear" targets the real
+    # inner nn.Linear/Linear4bit layers (named targets would hit the unsupported wrapper).
     lora = LoraConfig(r=rank, lora_alpha=rank * 2, lora_dropout=0.05, bias="none",
-                      task_type="CAUSAL_LM",
-                      target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"])
+                      task_type="CAUSAL_LM", target_modules="all-linear")
     cfg = SFTConfig(
         output_dir=OUT + "/adapter", num_train_epochs=epochs,
         per_device_train_batch_size=16, gradient_accumulation_steps=2,
