@@ -81,8 +81,8 @@ export default function CameraCapture() {
           <IonTitle>Take your selfie</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="kamari-hero kamari-pattern">
-        <div className="kamari-pad" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '100%' }}>
+      <IonContent>
+        <div className="kamari-hero kamari-pattern kamari-pad" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: '100%' }}>
           <p style={{ color: 'rgba(246,239,226,.85)', textAlign: 'center', maxWidth: 300 }}>
             Face the camera in good light. Your photo is checked once and never saved.
           </p>
