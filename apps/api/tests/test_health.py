@@ -3,6 +3,7 @@ import io
 
 from fastapi.testclient import TestClient
 
+from app.config import Settings, get_settings
 from app.main import app
 
 client = TestClient(app)
@@ -21,13 +22,19 @@ def test_models():
 
 
 def test_estimate_mock_returns_contract():
-    # 1x1 JPEG-ish bytes are fine — the mock CNN ignores pixels.
-    files = {"image": ("selfie.jpg", io.BytesIO(b"\xff\xd8\xff\xd9"), "image/jpeg")}
-    r = client.post("/v1/age/estimate", files=files, data={"language": "en", "country": "NG"})
-    assert r.status_code == 200
-    body = r.json()
-    for key in ["request_id", "model_version", "estimated_age", "decision",
-                "reason_code", "message", "retention"]:
-        assert key in body
-    assert body["retention"] == "image_not_stored"
-    assert body["decision"] in {"allow", "block", "secondary_check", "recapture"}
+    # Force mock mode so the test is hermetic regardless of a live .env (the mock
+    # CNN ignores pixels, so tiny bytes are fine).
+    app.dependency_overrides[get_settings] = lambda: Settings(
+        modal_age_endpoint="", modal_gemma_endpoint="")
+    try:
+        files = {"image": ("selfie.jpg", io.BytesIO(b"\xff\xd8\xff\xd9"), "image/jpeg")}
+        r = client.post("/v1/age/estimate", files=files, data={"language": "en", "country": "NG"})
+        assert r.status_code == 200
+        body = r.json()
+        for key in ["request_id", "model_version", "estimated_age", "decision",
+                    "reason_code", "message", "retention"]:
+            assert key in body
+        assert body["retention"] == "image_not_stored"
+        assert body["decision"] in {"allow", "block", "secondary_check", "recapture"}
+    finally:
+        app.dependency_overrides.pop(get_settings, None)

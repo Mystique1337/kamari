@@ -72,7 +72,13 @@ class CNN:
         import numpy as np
         from PIL import Image
 
-        img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        # Undecodable / corrupt upload: return a graceful low-quality signal so the
+        # gateway policy asks for a recapture, rather than throwing a 500.
+        try:
+            img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        except Exception:
+            return {"estimated_age": 0.0, "p_under_18": 0.5, "uncertainty": 1.0,
+                    "face_quality": 0.0, "model_version": MODEL_VERSION}
         w, h = img.size
         s = min(w, h)
         img = img.crop(((w - s) // 2, (h - s) // 2, (w + s) // 2, (h + s) // 2)).resize((224, 224))
