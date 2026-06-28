@@ -22,9 +22,11 @@ class Settings(BaseSettings):
     api_key_pepper: str = "dev-pepper-change-me"
     require_api_key: bool = False  # set True in production
 
-    # Human auth (fastapi-users JWT). Auth routes mount only when database_url is set.
-    jwt_secret: str = "dev-jwt-secret-change-me"
-    jwt_lifetime_seconds: int = 3600
+    # Human auth — Supabase GoTrue. The gateway VERIFIES Supabase-issued JWTs (HS256)
+    # using the project's JWT secret; users live in Supabase auth.users.
+    supabase_anon_key: str = ""
+    supabase_jwt_secret: str = ""        # GOTRUE_JWT_SECRET / project JWT secret
+    supabase_jwt_aud: str = "authenticated"
 
     # Policy thresholds (mirrors training/cnn thresholds_v0.json defaults)
     block_p_under_18: float = 0.70

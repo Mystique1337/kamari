@@ -49,18 +49,19 @@ app.include_router(health.router)
 app.include_router(age.router)
 app.include_router(explain.router)
 
-# Human auth (fastapi-users JWT) mounts only when a database is configured, so the
-# gateway still runs standalone in mock mode. Machines keep using API keys.
-if get_settings().database_url:
-    from .auth.schemas import UserCreate, UserRead, UserUpdate
-    from .auth.users import auth_backend, fastapi_users
+# Human auth via Supabase GoTrue — mounts when the project JWT secret is configured.
+# (The app logs in against Supabase directly and sends the access token as a Bearer.)
+if get_settings().supabase_jwt_secret:
+    from fastapi import Depends
 
-    app.include_router(fastapi_users.get_auth_router(auth_backend), prefix="/v1/auth/jwt", tags=["auth"])
-    app.include_router(fastapi_users.get_register_router(UserRead, UserCreate), prefix="/v1/auth", tags=["auth"])
-    app.include_router(fastapi_users.get_users_router(UserRead, UserUpdate), prefix="/v1/users", tags=["auth"])
-
+    from .auth.gotrue import current_user
     from .routes import keys
+
     app.include_router(keys.router)
+
+    @app.get("/v1/me", tags=["auth"])
+    async def me(user: dict = Depends(current_user)):
+        return user
 
 
 @app.get("/")

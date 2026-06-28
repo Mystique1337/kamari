@@ -19,6 +19,7 @@ create extension if not exists vector;    -- pgvector: face embeddings for 1:1 v
 create table if not exists kamari.organizations (
   id           uuid primary key default gen_random_uuid(),
   name         text not null,
+  owner_auth_id text unique,            -- Supabase auth.users id of the owner (GoTrue)
   created_at   timestamptz not null default now()
 );
 
