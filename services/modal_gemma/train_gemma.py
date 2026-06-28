@@ -26,8 +26,8 @@ MODEL_ID = os.environ.get("GEMMA_MODEL_ID", "google/gemma-4-E4B-it")
 image = (
     modal.Image.debian_slim(python_version="3.11")
     .pip_install(
-        "torch", "transformers>=4.50", "peft>=0.12", "trl>=0.11", "datasets>=2.20",
-        "bitsandbytes>=0.43", "accelerate>=0.33", "huggingface_hub", "wandb",
+        "torch", "torchvision", "transformers>=4.50", "peft>=0.12", "trl>=0.11", "datasets>=2.20",
+        "bitsandbytes>=0.43", "accelerate>=0.33", "huggingface_hub", "wandb", "pillow",
     )
 )
 app = modal.App("kamari-gemma-train", image=image)
@@ -108,7 +108,8 @@ def train(epochs: int = 3, lr: float = 2e-4, rank: int = 32):
         run_name=f"gemma4b-lora-r{rank}", report_to=["wandb"] if use_wandb else [],
     )
     trainer = SFTTrainer(model=model, args=cfg, train_dataset=ds["train"],
-                         eval_dataset=ds["eval"], peft_config=lora, formatting_func=formatting)
+                         eval_dataset=ds["eval"], peft_config=lora, formatting_func=formatting,
+                         processing_class=tok)  # force text tokenizer; skip multimodal processor
     resume = get_last_checkpoint(cfg.output_dir) if os.path.isdir(cfg.output_dir) else None
     trainer.train(resume_from_checkpoint=resume)
     trainer.save_model(OUT + "/adapter")
