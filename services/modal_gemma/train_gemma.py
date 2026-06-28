@@ -89,9 +89,8 @@ def train(epochs: int = 3, lr: float = 2e-4, rank: int = 32):
             msgs.append({"role": "assistant", "content": json.dumps(ex["output"], ensure_ascii=False)})
         return tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=not with_answer)
 
-    def formatting(batch):
-        keys = list(batch.keys())
-        return [to_text({k: batch[k][i] for k in keys}) for i in range(len(batch[keys[0]]))]
+    def formatting(example):  # TRL 1.x passes ONE example and expects ONE string back
+        return to_text(example)
 
     # Gemma 4 wraps projections in Gemma4ClippableLinear; "all-linear" targets the real
     # inner nn.Linear/Linear4bit layers (named targets would hit the unsupported wrapper).
