@@ -59,8 +59,14 @@ export default function AgeResult() {
           </div>
 
           {lastResult.decision === 'secondary_check' && (
-            <IonButton expand="block" className="kamari-btn" color="secondary">
+            <IonButton expand="block" className="kamari-btn" color="secondary" onClick={() => history.push('/secondary')}>
               Continue to secondary check
+              <IonIcon slot="end" icon={arrowForward} />
+            </IonButton>
+          )}
+          {lastResult.decision === 'block' && (
+            <IonButton expand="block" className="kamari-btn" color="secondary" onClick={() => history.push('/guardian')}>
+              Ask a guardian to approve
               <IonIcon slot="end" icon={arrowForward} />
             </IonButton>
           )}

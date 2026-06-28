@@ -6,8 +6,12 @@ import Welcome from './pages/Welcome';
 import Consent from './pages/Consent';
 import CameraCapture from './pages/CameraCapture';
 import AgeResult from './pages/AgeResult';
+import SecondaryCheck from './pages/SecondaryCheck';
+import GuardianConsent from './pages/GuardianConsent';
+import Login from './pages/Login';
 import DeveloperDashboard from './pages/DeveloperDashboard';
 import ApiKeys from './pages/ApiKeys';
+import UsageLogs from './pages/UsageLogs';
 
 export default function App() {
   return (
@@ -18,8 +22,12 @@ export default function App() {
           <Route exact path="/consent" component={Consent} />
           <Route exact path="/capture" component={CameraCapture} />
           <Route exact path="/result" component={AgeResult} />
+          <Route exact path="/secondary" component={SecondaryCheck} />
+          <Route exact path="/guardian" component={GuardianConsent} />
+          <Route exact path="/login" component={Login} />
           <Route exact path="/developer" component={DeveloperDashboard} />
           <Route exact path="/developer/keys" component={ApiKeys} />
+          <Route exact path="/developer/usage" component={UsageLogs} />
           <Route exact path="/">
             <Redirect to="/welcome" />
           </Route>

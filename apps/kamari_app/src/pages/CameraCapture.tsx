@@ -15,14 +15,14 @@ export default function CameraCapture() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const history = useHistory();
-  const { consentAccepted, setCapture } = useKamari();
+  const { consentAccepted, setCapture, language, country } = useKamari();
 
   // Guard: must pass consent first.
   useEffect(() => {
     if (!consentAccepted) history.replace('/consent');
   }, [consentAccepted, history]);
 
-  // Start the web camera stream (skipped on native — Capacitor opens its own camera).
+  // Start the web camera stream (skipped on native - Capacitor opens its own camera).
   useEffect(() => {
     if (isNative()) return;
     let cancelled = false;
@@ -50,7 +50,7 @@ export default function CameraCapture() {
   const run = async (dataUrl: string) => {
     setBusy(true);
     try {
-      const result = await estimateAge(dataUrl, { language: 'en', country: 'NG' });
+      const result = await estimateAge(dataUrl, { language, country });
       setCapture(dataUrl, result);
       stopStream();
       history.push('/result');

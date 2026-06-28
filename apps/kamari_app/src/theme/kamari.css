@@ -19,7 +19,7 @@ ion-content.kamari-bg {
   overflow: hidden;
 }
 
-/* Adinkra/Adire pattern overlay — subtle geometric diamonds + dots, indigo on cream
+/* Adinkra/Adire pattern overlay - subtle geometric diamonds + dots, indigo on cream
    (or gold on indigo when placed inside .kamari-hero). Encoded as an SVG tile. */
 .kamari-pattern::before {
   content: '';

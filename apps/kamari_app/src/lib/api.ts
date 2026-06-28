@@ -1,13 +1,12 @@
 import { AgeEstimateResponse, type EstimateOptions } from './types';
 
-// The ONLY thing the app waits on from the ML side: this base URL.
-// Point it at the Railway gateway (which calls the Modal CNN/Gemma endpoints).
-// While that's empty (or VITE_USE_MOCK=1), a realistic mock is used so the whole
-// flow is demoable today.
+// The base URL of the Kamari gateway (Railway), which calls the Modal CNN/Gemma endpoints.
+// While empty (or VITE_USE_MOCK=1) a realistic mock is used so the flow is demoable offline.
 const API_URL = (import.meta.env.VITE_KAMARI_API_URL as string | undefined)?.replace(/\/$/, '');
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === '1' || !API_URL;
 
 export const apiMode = USE_MOCK ? 'mock' : 'live';
+export const apiBase = API_URL ?? '';
 
 function dataUrlToBlob(dataUrl: string): Blob {
   const [head, b64] = dataUrl.split(',');
@@ -18,7 +17,12 @@ function dataUrlToBlob(dataUrl: string): Blob {
   return new Blob([bytes], { type: mime });
 }
 
-/** POST /v1/age/estimate — multipart image upload. Returns a validated response. */
+function authHeaders(token?: string | null): Record<string, string> {
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+// ---------------- consumer age check ----------------
+/** POST /v1/age/estimate. Multipart image upload. Returns a validated response. */
 export async function estimateAge(
   imageDataUrl: string,
   opts: EstimateOptions = {},
@@ -35,9 +39,84 @@ export async function estimateAge(
   return AgeEstimateResponse.parse(await res.json());
 }
 
+// ---------------- developer: API keys ----------------
+export interface ApiKeyRow {
+  id: string; name: string; status: string;
+  rate_limit_per_minute: number; created_at: string; last_used_at: string | null;
+}
+
+export async function listKeys(token: string): Promise<ApiKeyRow[]> {
+  const res = await fetch(`${API_URL}/v1/keys`, { headers: authHeaders(token) });
+  if (!res.ok) throw new Error(`Could not load keys (${res.status})`);
+  return res.json();
+}
+
+export async function createKey(token: string, name: string): Promise<{ name: string; api_key: string }> {
+  const res = await fetch(`${API_URL}/v1/keys?name=${encodeURIComponent(name)}`, {
+    method: 'POST', headers: authHeaders(token),
+  });
+  if (!res.ok) throw new Error(`Could not create key (${res.status})`);
+  return res.json();
+}
+
+export async function revokeKey(token: string, id: string): Promise<void> {
+  const res = await fetch(`${API_URL}/v1/keys/${id}`, { method: 'DELETE', headers: authHeaders(token) });
+  if (!res.ok) throw new Error(`Could not revoke key (${res.status})`);
+}
+
+// ---------------- developer: usage ----------------
+export interface UsageSummary {
+  total: number; allow: number; block: number;
+  secondary_check: number; recapture: number; allow_rate: number; last_24h: number;
+}
+export interface UsageLog {
+  request_id: string; endpoint: string; decision: string;
+  reason_code: string; estimated_age: number | null; created_at: string;
+}
+
+export async function usageSummary(token: string): Promise<UsageSummary> {
+  const res = await fetch(`${API_URL}/v1/usage/summary`, { headers: authHeaders(token) });
+  if (!res.ok) throw new Error(`Could not load usage (${res.status})`);
+  return res.json();
+}
+
+export async function usageLogs(token: string, limit = 50): Promise<UsageLog[]> {
+  const res = await fetch(`${API_URL}/v1/usage/logs?limit=${limit}`, { headers: authHeaders(token) });
+  if (!res.ok) throw new Error(`Could not load logs (${res.status})`);
+  return res.json();
+}
+
+export async function sendWelcome(token: string): Promise<void> {
+  try {
+    await fetch(`${API_URL}/v1/account/welcome`, { method: 'POST', headers: authHeaders(token) });
+  } catch { /* best effort */ }
+}
+
+// ---------------- guardian consent (public) ----------------
+export async function guardianRequest(
+  guardianEmail: string, appName = 'Kamari', guardianName = '',
+): Promise<{ session_id: string; expires_in: number }> {
+  const res = await fetch(`${API_URL}/v1/guardian/request`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ guardian_email: guardianEmail, app_name: appName, guardian_name: guardianName }),
+  });
+  if (!res.ok) throw new Error(`Could not start guardian check (${res.status})`);
+  return res.json();
+}
+
+export async function guardianVerify(sessionId: string, code: string): Promise<{ approved: boolean }> {
+  const res = await fetch(`${API_URL}/v1/guardian/verify`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_id: sessionId, code }),
+  });
+  if (res.status === 401) throw new Error('That code is not correct.');
+  if (!res.ok) throw new Error(`Verification failed (${res.status})`);
+  return res.json();
+}
+
 // --- Mock: samples a plausible borderline result so every decision path is reachable ---
 function mockEstimate(): Promise<AgeEstimateResponse> {
-  const age = +(13 + Math.random() * 14).toFixed(1); // 13–27
+  const age = +(13 + Math.random() * 14).toFixed(1); // 13-27
   const pUnder = +Math.max(0, Math.min(1, (19 - age) / 8 + Math.random() * 0.1)).toFixed(2);
   const quality = +(0.7 + Math.random() * 0.3).toFixed(2);
   const uncertainty = +(0.1 + Math.random() * 0.25).toFixed(2);
@@ -47,16 +126,16 @@ function mockEstimate(): Promise<AgeEstimateResponse> {
   let message = 'You are verified. Welcome in.';
   if (quality < 0.72) {
     decision = 'recapture'; reason = 'RECAPTURE_LOW_QUALITY';
-    message = 'The photo was a little unclear — let’s try once more in better light.';
+    message = 'The photo was a little unclear. Let us try once more in better light.';
   } else if (pUnder >= 0.7) {
     decision = 'block'; reason = 'BLOCK_LIKELY_MINOR';
-    message = 'We can’t confirm you meet the age requirement. A guardian check is needed.';
+    message = 'We cannot confirm you meet the age requirement. A guardian check is needed.';
   } else if (age < 21) {
     decision = 'secondary_check'; reason = 'SECONDARY_CHECK_NEAR_THRESHOLD';
-    message = 'You’re close to the limit, so we need one more quick check.';
+    message = 'You are close to the limit, so we need one more quick check.';
   } else if (uncertainty > 0.28) {
     decision = 'secondary_check'; reason = 'SECONDARY_CHECK_LOW_CONFIDENCE';
-    message = 'We’d like a second check to be sure.';
+    message = 'We would like a second check to be sure.';
   }
 
   const body: AgeEstimateResponse = {

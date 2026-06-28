@@ -18,7 +18,7 @@ export default function Welcome() {
               Kámárí
             </h1>
             <p style={{ maxWidth: 320, margin: '14px auto 0', color: 'rgba(246,239,226,.86)', lineHeight: 1.5 }}>
-              A respectful age check, tuned for African faces and skin tones — your photo
+              A respectful age check, tuned for African faces and skin tones - your photo
               is never stored.
             </p>
             <div style={{ marginTop: 18, display: 'flex', justifyContent: 'center' }}>
@@ -42,10 +42,10 @@ export default function Welcome() {
             expand="block"
             fill="clear"
             color="primary"
-            onClick={() => history.push('/developer')}
+            onClick={() => history.push('/login')}
           >
             <IonIcon slot="start" icon={codeSlashOutline} />
-            I’m a developer
+            I am a developer
           </IonButton>
           <p className="kamari-muted kamari-center" style={{ fontSize: '.8rem' }}>
             An estimate, not a legal determination.

@@ -4,7 +4,7 @@ interface Props {
   tone?: 'gold' | 'indigo';
 }
 
-/** Adinkra-inspired Kámárí glyph — a diamond with radiating marks and a clay centre. */
+/** Adinkra-inspired Kámárí glyph - a diamond with radiating marks and a clay centre. */
 export default function KamariMark({ size = 64, tone = 'gold' }: Props) {
   const stroke = tone === 'gold' ? '#E8B84B' : '#213A6B';
   return (

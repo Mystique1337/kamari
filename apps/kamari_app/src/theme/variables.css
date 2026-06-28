@@ -1,14 +1,14 @@
-/* Kámárí design tokens — Adire indigo base with terracotta / gold / green accents.
+/* Kámárí design tokens - Adire indigo base with terracotta / gold / green accents.
    Layered over Ionic's CSS variables so Ionic components inherit the theme. */
 
 :root {
   /* --- Brand palette (Adire indigo + West African earth) --- */
-  --kamari-indigo:        #213A6B;  /* primary — adire indigo */
-  --kamari-indigo-deep:   #14213D;  /* darkest — splash / headers */
+  --kamari-indigo:        #213A6B;  /* primary - adire indigo */
+  --kamari-indigo-deep:   #14213D;  /* darkest - splash / headers */
   --kamari-indigo-soft:   #36518a;
-  --kamari-terracotta:    #C65D3B;  /* secondary — clay/laterite */
-  --kamari-gold:          #E8B84B;  /* tertiary — brass/gold */
-  --kamari-green:         #2F6B4F;  /* success — palm green */
+  --kamari-terracotta:    #C65D3B;  /* secondary - clay/laterite */
+  --kamari-gold:          #E8B84B;  /* tertiary - brass/gold */
+  --kamari-green:         #2F6B4F;  /* success - palm green */
   --kamari-clay:          #8A4B38;
   --kamari-cream:         #F6EFE2;  /* warm background */
   --kamari-cream-2:       #EFE4D2;

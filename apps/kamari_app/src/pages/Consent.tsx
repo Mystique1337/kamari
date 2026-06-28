@@ -6,10 +6,11 @@ import { lockClosedOutline, eyeOffOutline, personOutline, arrowForward } from 'i
 import { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useKamari } from '../lib/state';
+import LocalePicker from '../components/LocalePicker';
 
 const POINTS = [
   { icon: eyeOffOutline, title: 'Your photo is never stored', body: 'We process the image in the moment and delete it immediately. No image, no face print is kept.' },
-  { icon: lockClosedOutline, title: 'Only a decision is logged', body: 'We keep the outcome and model version for safety auditing — never your face.' },
+  { icon: lockClosedOutline, title: 'Only a decision is logged', body: 'We keep the outcome and model version for safety auditing - never your face.' },
   { icon: personOutline, title: 'This is an estimate', body: 'Kámárí estimates age; it is not a legal age determination. Borderline cases get a second check.' },
 ];
 
@@ -35,6 +36,10 @@ export default function Consent() {
         <p className="kamari-eyebrow" style={{ color: 'var(--kamari-terracotta)' }}>Privacy first</p>
         <h2 style={{ marginTop: 6 }}>How Kámárí treats your photo</h2>
 
+        <div style={{ marginTop: 14 }}>
+          <LocalePicker />
+        </div>
+
         <div className="kamari-stack" style={{ marginTop: 18 }}>
           {POINTS.map((p) => (
             <div key={p.title} className="kamari-card" style={{ padding: 18, display: 'flex', gap: 14 }}>
@@ -55,7 +60,7 @@ export default function Consent() {
         </label>
 
         <IonButton expand="block" className="kamari-btn" color="secondary" disabled={!agreed} onClick={proceed}>
-          I agree — continue
+          I agree - continue
           <IonIcon slot="end" icon={arrowForward} />
         </IonButton>
       </IonContent>
