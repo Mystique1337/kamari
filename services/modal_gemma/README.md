@@ -1,9 +1,9 @@
 # Kámárí Gemma Explanation Layer (Modal)
 
 Turns CNN + policy signals into safe, multilingual, **strict-JSON** explanations.
-Gemma explains decisions — it never estimates age and never invents decision codes.
+Gemma explains decisions - it never estimates age and never invents decision codes.
 
-## Model — `Shinzmann/gemma-explain-lora-v0`
+## Model - `Shinzmann/gemma-explain-lora-v0`
 - Adapter: https://huggingface.co/Shinzmann/gemma-explain-lora-v0
 - Base: **`google/gemma-4-E4B-it`** (Gemma 4, effective-4B) · QLoRA (4-bit, `target_modules=all-linear`)
 - SFT data: https://huggingface.co/datasets/Shinzmann/gemma-sft-v0 (balanced 8k: 7,200 train / 800 eval)
@@ -30,13 +30,13 @@ modal run --detach services/modal_gemma/train_gemma.py --epochs 3
 ```
 
 ## Serve
-**Fast GPU (recommended for the live API)** — per-request latency matters:
+**Fast GPU (recommended for the live API)** - per-request latency matters:
 ```bash
 modal deploy services/modal_gemma/serve_gemma.py   # -> set URL as MODAL_GEMMA_ENDPOINT
 ```
 **CPU option (cost/offline/edge):** a 4B model on CPU is ~seconds/response. For acceptable
 CPU speed, merge the adapter into the base and convert to **q4 GGUF** (llama.cpp); Google ships
-`gemma-4-E4B-it-qat-q4_0-gguf` as the QAT base. (Not wired yet — ask and I'll add the
+`gemma-4-E4B-it-qat-q4_0-gguf` as the QAT base. (Not wired yet - ask and I'll add the
 merge→GGUF→serve path.)
 
 ## Contract

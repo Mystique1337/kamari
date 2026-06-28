@@ -1,4 +1,4 @@
-"""Kámárí CNN age model — best-practice training on Modal (GPU).
+"""Kámárí CNN age model - best-practice training on Modal (GPU).
 
 Pulls the dataset from HF `<HF_NAMESPACE>/kamari-faces-v0`, trains a strong, exportable
 multi-head age model, runs a FULL subgroup + latency evaluation on the frozen benchmark,
@@ -93,7 +93,7 @@ def train(epochs: int = 30, backbone: str = "tf_efficientnetv2_s",
     df = df[df["age"].notna()].copy()
     df = df[df["path"].map(lambda p: os.path.exists(os.path.join(data_dir, str(p))))].reset_index(drop=True)
     if not len(df):
-        raise RuntimeError("No training crops found — set ALLOW_PRIVATE_CROP_UPLOAD=1 in the data notebook.")
+        raise RuntimeError("No training crops found - set ALLOW_PRIVATE_CROP_UPLOAD=1 in the data notebook.")
 
     # ---- data-integrity guard: audit + auto label-quality gate (robust to any manifest) ----
     audit = df.groupby("dataset")["age"].agg(n="size", amin="min", amax="max", amean="mean", nunique="nunique")

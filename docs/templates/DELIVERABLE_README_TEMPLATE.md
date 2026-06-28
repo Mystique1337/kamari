@@ -5,7 +5,7 @@ API, app). Fill every section; write "N/A" rather than deleting a heading. The H
 repo README for each artifact is generated from this template.
 -->
 ---
-# (HF card front-matter — keep for model/dataset repos)
+# (HF card front-matter - keep for model/dataset repos)
 license: other
 tags: [kamari, age-estimation, african, fairness]
 ---
@@ -15,7 +15,7 @@ tags: [kamari, age-estimation, african, fairness]
 > One-sentence description of what this is and who it's for.
 
 ## Summary
-What it does, in 3–5 sentences. State the African-focused age-gating purpose.
+What it does, in 3-5 sentences. State the African-focused age-gating purpose.
 
 ## Intended use & out-of-scope
 - Intended: …
@@ -53,7 +53,7 @@ Per-source licences (link `licenses.md`). Redistribution status of any images.
 ## Versioning & provenance
 - Version: …  | Git commit: …  | HF repo: …  | Benchmark run ID: …
 - Changelog:
-  - `v0.1.0` — initial release.
+  - `v0.1.0` - initial release.
 
 ## Citation / contact
 …

@@ -20,7 +20,7 @@ can call it live without the models. Set the Modal URLs to go fully live.
 | GET | `/v1/models` | model registry summary |
 | POST | `/v1/age/estimate` | image → CNN → policy → (Gemma) message |
 | POST | `/v1/age/explain` | re-render explanation for a known decision |
-| POST | `/v1/auth/jwt/login`, `/v1/auth/register`, `/v1/users/me` | human auth (fastapi-users JWT) — **mounts only when `DATABASE_URL` is set** |
+| POST | `/v1/auth/jwt/login`, `/v1/auth/register`, `/v1/users/me` | human auth (fastapi-users JWT) - **mounts only when `DATABASE_URL` is set** |
 
 Humans authenticate via fastapi-users JWT over Postgres (`kamari.app_users`, argon2);
 machines use hashed API keys. Set `JWT_SECRET` + `DATABASE_URL` to enable auth.
@@ -30,7 +30,7 @@ machines use hashed API keys. Set `JWT_SECRET` + `DATABASE_URL` to enable auth.
 `SUPABASE_SERVICE_ROLE_KEY`, `API_KEY_PEPPER`, `REQUIRE_API_KEY`, `RETENTION_DEFAULT`.
 
 ## Policy engine (`app/policy.py`, plan §10.4)
-Conservative near the boundary — borderline cases are never auto-approved. Decision codes
+Conservative near the boundary - borderline cases are never auto-approved. Decision codes
 come from the fixed enum (§21); the same rules seed the Gemma SFT data.
 
 ## Test

@@ -1,8 +1,8 @@
-"""Kámárí Gemma explanation layer — serving on Modal.
+"""Kámárí Gemma explanation layer - serving on Modal.
 
 Loads base Gemma 4 + the LoRA adapter from `<HF_NAMESPACE>/gemma-explain-lora-v0`,
 merges the adapter, and generates a strict-JSON explanation with a **manual greedy decode**
-(KV-cached) — the multimodal Gemma 4 `model.generate` has a tensor-shape bug, so we avoid it.
+(KV-cached) - the multimodal Gemma 4 `model.generate` has a tensor-shape bug, so we avoid it.
 Invalid output falls back to a deterministic safe template so the gateway always gets valid JSON.
 
 Deploy:
@@ -61,7 +61,7 @@ class Gemma:
         self.model.eval()
 
     def _greedy(self, prompt: str, max_new: int = 256) -> str:
-        """Manual KV-cached greedy decode — robust to Gemma 4's logits shape."""
+        """Manual KV-cached greedy decode - robust to Gemma 4's logits shape."""
         import torch
         enc = self.tok(prompt, return_tensors="pt").to(self.model.device)
         attn = enc["attention_mask"]

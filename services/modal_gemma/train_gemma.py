@@ -1,11 +1,11 @@
-"""Kámárí Gemma explanation layer — best-practice QLoRA fine-tune on Modal (GPU).
+"""Kámárí Gemma explanation layer - best-practice QLoRA fine-tune on Modal (GPU).
 
 Pulls SFT data from HF `<HF_NAMESPACE>/gemma-sft-v0`, QLoRA-fine-tunes Gemma 4B, runs a
 comprehensive eval (JSON validity, schema compliance, policy/decision consistency,
 language correctness), tracks in W&B, checkpoints every epoch (resumable), and uploads the
 adapter + metrics + reports + card to `<HF_NAMESPACE>/gemma-explain-lora-v0`.
 
-Gemma EXPLAINS decisions — it never estimates age and never invents decision codes.
+Gemma EXPLAINS decisions - it never estimates age and never invents decision codes.
 
 Prereqs:
     python training/gemma/build_sft_dataset.py --n 6000
@@ -140,7 +140,7 @@ def train(epochs: int = 3, lr: float = 2e-4, rank: int = 32):
 
 
 def _greedy_decode(model, tok, prompt, max_new=256):
-    """Manual KV-cached greedy decode — robust to Gemma 4's multimodal logits shape."""
+    """Manual KV-cached greedy decode - robust to Gemma 4's multimodal logits shape."""
     import torch
     enc = tok(prompt, return_tensors="pt").to(model.device)
     attn, cur, past, out_ids = enc["attention_mask"], enc["input_ids"], None, []
@@ -201,7 +201,7 @@ def _evaluate(model, tok, eval_ds, to_text, n=200):
 
 def _report(m):
     e = m["eval"]
-    return f"""# Kámárí Gemma Explanation — Eval Report (v0)
+    return f"""# Kámárí Gemma Explanation - Eval Report (v0)
 
 Base **{m['base']}** · GPU {m['gpu']} · {m['epochs']} epochs · LoRA r={m['rank']} · n={e['total']}
 
@@ -242,7 +242,7 @@ explanations (en, sw, yo, ha, am, fr, ar). Base: `{MODEL_ID}`. {epochs} epochs.
 - policy consistency **{e['policy_consistency']}** · decision consistency **{e['decision_consistency']}**
 - language correctness **{e['language_correctness']}** · invented-code rate **{e['invented_code_rate']}**
 
-Full report in `gemma_eval_report.md`; metrics in `metrics_v0.json`. Gemma explains — it never
+Full report in `gemma_eval_report.md`; metrics in `metrics_v0.json`. Gemma explains - it never
 estimates age and never invents decision codes.
 """
     api.upload_folder(folder_path=adapter_dir, repo_id=repo, repo_type="model")

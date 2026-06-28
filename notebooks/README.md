@@ -6,7 +6,7 @@ named in the recommendations and writes African-focused benchmark/report outputs
 
 ## What it does
 **1. Gather** licence-cleared datasets → **2. Preprocess** (face-align, crop 224, quality +
-ITA/skin band, build manifest) → **3. EDA** (distributions, 13–21 boundary, fairness,
+ITA/skin band, build manifest) → **3. EDA** (distributions, 13-21 boundary, fairness,
 quality report) → **4. Publish to Hugging Face**.
 
 ## Hugging Face outputs
@@ -16,7 +16,7 @@ quality report) → **4. Publish to Hugging Face**.
 | `<ns>/dataset-registry-v0` | private | manifests + registry + licences + EDA + card | provenance |
 | `<ns>/kamari-safe-open-v0` | private | frozen benchmark manifest | benchmarking |
 
-Raw face crops are pushed to a **private** repo only — never public.
+Raw face crops are pushed to a **private** repo only - never public.
 
 ## One-time Colab setup
 1. **Push this repo to GitHub** (the notebook `git clone`s it).
@@ -25,7 +25,7 @@ Raw face crops are pushed to a **private** repo only — never public.
 3. Use a **GPU runtime** (Runtime → Change runtime type → GPU) for preprocessing.
 
 The first cell auto-clones the repo, `pip install`s `requirements-data.txt`, and loads the
-secrets. It also runs locally (falls back to `.env` — see `.env.example`).
+secrets. It also runs locally (falls back to `.env` - see `.env.example`).
 
 For full recommendation coverage, add approved dataset URLs or HF repos as Colab secrets when
 the dataset is not directly open-downloadable: `APPA_REAL_URL`, `ADIENCE_URL`, `AGEDB_URL` or
@@ -50,7 +50,7 @@ The final cell prints the HF dataset links. Training reads from `kamari-faces-v0
 else is needed to kick off CNN training on Modal.
 
 The v2 notebook also writes `AFRICAN_TAILORING_REPORT.md`, `BENCHMARK_CARD.md`, and fixed
-benchmark split manifests for African signal, Black subset, dark-skin, 13–21 boundary, and
+benchmark split manifests for African signal, Black subset, dark-skin, 13-21 boundary, and
 low-quality-camera slices.
 It also writes `pipeline_dataset_audit.csv/md`, which shows whether each planned dataset
 downloaded, produced candidate manifest rows, and is ready for preprocessing/HF handoff.

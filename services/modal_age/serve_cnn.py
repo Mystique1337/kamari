@@ -1,8 +1,8 @@
-"""Kámárí CNN age model — serving on Modal (CPU).
+"""Kámárí CNN age model - serving on Modal (CPU).
 
 Loads the trained PyTorch checkpoint (`best.pt`) from `<HF_NAMESPACE>/cnn-age-v0` and runs
 CPU inference. (The ONNX export shipped weights as an external sidecar that doesn't survive
-the HF download, so we serve the complete `best.pt` directly — still fast on CPU.)
+the HF download, so we serve the complete `best.pt` directly - still fast on CPU.)
 
 Returns raw signals only; the policy/decision engine lives in the gateway.
 

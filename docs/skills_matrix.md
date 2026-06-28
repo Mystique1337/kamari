@@ -63,7 +63,7 @@ Custom, version-controlled skills encoding the plan's conventions:
 | Multipart upload / media handling | MVP |
 | i18n incl. RTL Arabic (en/sw/yo/ha/am/fr/ar) | Phase 7 |
 | Android (Gradle/Android Studio) | Phase 6 |
-| iOS (Xcode, signing, App Store) — macOS | Phase 6 |
+| iOS (Xcode, signing, App Store) - macOS | Phase 6 |
 | Consent/privacy UX + accessibility | MVP |
 
 ### Backend / API (FastAPI on Railway)
@@ -81,7 +81,7 @@ Custom, version-controlled skills encoding the plan's conventions:
 | Signed webhooks | Phase 7+ |
 | Policy/decision engine | MVP |
 
-### ML / AI — Computer Vision CNN
+### ML / AI - Computer Vision CNN
 | Skill | Phase |
 |---|---|
 | PyTorch | Phase 4 |
@@ -93,10 +93,10 @@ Custom, version-controlled skills encoding the plan's conventions:
 | Calibration (temperature/conformal/uncertainty) | Phase 4 |
 | ONNX export + ONNX Runtime | Phase 4 |
 | TFLite export | Phase 4 |
-| Class imbalance / oversampling 13–21 | Phase 4 |
+| Class imbalance / oversampling 13-21 | Phase 4 |
 | Fairness-aware evaluation | Phase 3/4 |
 
-### ML / AI — LLM fine-tuning (Gemma)
+### ML / AI - LLM fine-tuning (Gemma)
 | Skill | Phase |
 |---|---|
 | LoRA/QLoRA (PEFT, TRL, transformers) | Phase 7 |
@@ -153,10 +153,10 @@ Custom, version-controlled skills encoding the plan's conventions:
 
 ## 4. Role clustering
 
-1. **Frontend/mobile** — Ionic React, Capacitor, PWA, TypeScript
-2. **Backend/platform** — FastAPI, Supabase/Postgres, Railway, Docker, n8n
-3. **ML engineer (CV)** — PyTorch CNN, calibration, ONNX/TFLite, benchmarks
-4. **ML engineer (LLM/data)** — Gemma LoRA, SFT, multilingual eval, dataset governance
+1. **Frontend/mobile** - Ionic React, Capacitor, PWA, TypeScript
+2. **Backend/platform** - FastAPI, Supabase/Postgres, Railway, Docker, n8n
+3. **ML engineer (CV)** - PyTorch CNN, calibration, ONNX/TFLite, benchmarks
+4. **ML engineer (LLM/data)** - Gemma LoRA, SFT, multilingual eval, dataset governance
 
 ## 5. Minimum set to reach the first demo (§19)
 TypeScript/React/Ionic · browser camera · React Query/Zod · FastAPI + Pydantic + Docker + Railway · Modal serving · basic PyTorch CNN + ONNX export. Gemma, verification, liveness, n8n, and app-store builds are deferrable.
