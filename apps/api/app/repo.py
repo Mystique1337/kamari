@@ -179,7 +179,8 @@ async def usage_logs(org_id: str | None, limit: int = 50) -> list[dict]:
     try:
         rows = await asyncio.to_thread(
             lambda: _tbl("inference_requests")
-            .select("request_id,endpoint,decision,reason_code,estimated_age,created_at")
+            .select("request_id,endpoint,decision,reason_code,estimated_age,p_under_18,"
+                    "uncertainty,face_quality,model_version,retention_policy,created_at")
             .eq("organization_id", org_id).order("created_at", desc=True).limit(limit).execute())
         return rows.data or []
     except Exception as e:  # noqa: BLE001
