@@ -32,4 +32,14 @@ No raw face images or embeddings stored by default · metadata + audit logs only
 - Branches: `main` (prod) · `staging` · `feature/*` · `model/*`.
 
 ## Status
-Phase 0 — project setup. Planning docs and skills tooling in place; scaffolding next.
+- ✅ Phase 0 — monorepo scaffold, skills tooling, planning docs.
+- ✅ Data pipeline — registry + manifest schema + Colab notebooks (`notebooks/01–04`, single HF upload step). *Run on Colab.*
+- ✅ App MVP — `apps/kamari_app` (Ionic React + Capacitor + PWA), African design system, full Welcome→Consent→Camera→Result flow on a mock-to-live API seam.
+- ⏳ Next — Modal CNN + Gemma train/serve scripts; FastAPI gateway; wire live endpoints.
+
+### Where things run
+| Workstream | Runs on |
+|---|---|
+| Data gather/clean/EDA/upload | Google Colab → Hugging Face |
+| CNN + Gemma training/serving | Modal (GPU) |
+| App + API gateway | Local / Railway |
