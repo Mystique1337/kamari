@@ -52,6 +52,14 @@ def train(epochs: int = 20, backbone: str = "mobilenetv3_large_100",
     data_dir = snapshot_download(f"{ns}/kamari-faces-v0", repo_type="dataset", token=token)
     df = pd.read_parquet(os.path.join(data_dir, "manifests", "manifest_train_v0.parquet"))
     df = df[df["age"].notna()].reset_index(drop=True)
+    # Skip rows whose crop didn't make it to HF (e.g. ALLOW_PRIVATE_CROP_UPLOAD=0),
+    # so partial uploads never crash training.
+    before = len(df)
+    df = df[df["path"].map(lambda p: os.path.exists(os.path.join(data_dir, str(p))))].reset_index(drop=True)
+    if len(df) < before:
+        print(f"skipped {before - len(df)} train rows with missing crops (have {len(df)})")
+    if not len(df):
+        raise RuntimeError("No training crops found in kamari-faces-v0 — set ALLOW_PRIVATE_CROP_UPLOAD=1 in the data notebook.")
     bench_path = os.path.join(data_dir, "manifests", "manifest_benchmark_v0.parquet")
     bench = pd.read_parquet(bench_path) if os.path.exists(bench_path) else None
     print(f"train rows: {len(df)} | benchmark rows: {0 if bench is None else len(bench)}")
