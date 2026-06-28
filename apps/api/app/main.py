@@ -49,15 +49,22 @@ app.include_router(health.router)
 app.include_router(age.router)
 app.include_router(explain.router)
 
+# Guardian consent flow is public (the guardian has no account); emails go via n8n.
+from .routes import guardian  # noqa: E402
+
+app.include_router(guardian.router)
+
 # Human auth via Supabase GoTrue — mounts when the project JWT secret is configured.
 # (The app logs in against Supabase directly and sends the access token as a Bearer.)
 if get_settings().supabase_jwt_secret:
     from fastapi import Depends
 
     from .auth.gotrue import current_user
-    from .routes import keys
+    from .routes import account, keys, usage
 
     app.include_router(keys.router)
+    app.include_router(usage.router)
+    app.include_router(account.router)
 
     @app.get("/v1/me", tags=["auth"])
     async def me(user: dict = Depends(current_user)):

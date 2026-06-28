@@ -38,6 +38,16 @@ class Settings(BaseSettings):
     retention_default: str = "image_not_stored"
     use_gemma_message: bool = True
 
+    # n8n email (live "Dynamic Email Template Sender" workflow). The gateway POSTs
+    # {template:{to,subject,body,isHtml}, variables:{...}} with the header-auth secret.
+    n8n_email_webhook_url: str = ""
+    n8n_email_header_name: str = "x-webhook-secret"  # match your n8n Header Auth credential
+    n8n_email_header_secret: str = ""
+    email_from_name: str = "Kamari"
+
+    # Public app URL (Railway) — used to build links inside emails.
+    app_public_url: str = "https://kamari.app"
+
 
 @lru_cache
 def get_settings() -> Settings:

@@ -61,5 +61,6 @@ async def estimate(
         "reason_code": resp.reason_code.value, "face_quality": resp.face_quality,
         "estimated_age": resp.estimated_age, "p_under_18": resp.p_under_18,
         "uncertainty": resp.uncertainty, "retention": resp.retention,
+        "organization_id": _key,  # set when called with an API key; scopes usage analytics
     })
     return resp

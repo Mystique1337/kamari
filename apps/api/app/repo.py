@@ -35,6 +35,8 @@ async def log_inference(row: dict) -> None:
         "uncertainty": row.get("uncertainty"), "image_stored": False,
         "retention_policy": row.get("retention") or row.get("retention_policy"),
     }
+    if row.get("organization_id"):
+        rec["organization_id"] = row["organization_id"]
     try:
         await asyncio.to_thread(lambda: _tbl("inference_requests").insert(rec).execute())
     except Exception as e:  # noqa: BLE001 — logging must never break the request
@@ -102,3 +104,60 @@ async def validate_api_key(raw: str) -> dict | None:
     except Exception as e:  # noqa: BLE001
         print("[repo] api key validate failed:", e)
         return None
+
+
+async def org_id_for_user(user: dict) -> str | None:
+    if get_client() is None:
+        return None
+    res = await asyncio.to_thread(
+        lambda: _tbl("organizations").select("id").eq("owner_auth_id", user["id"]).limit(1).execute())
+    return res.data[0]["id"] if res.data else None
+
+
+async def get_key_name(user: dict, key_id: str) -> str | None:
+    org_id = await org_id_for_user(user)
+    if not org_id:
+        return None
+    res = await asyncio.to_thread(
+        lambda: _tbl("api_keys").select("name").eq("id", key_id)
+        .eq("organization_id", org_id).limit(1).execute())
+    return res.data[0]["name"] if res.data else None
+
+
+# ---------------- usage analytics (org-scoped) ----------------
+async def usage_summary(org_id: str | None) -> dict:
+    """Counts + decision mix for a developer's own traffic (their API keys)."""
+    empty = {"total": 0, "allow": 0, "block": 0, "secondary_check": 0, "recapture": 0,
+             "allow_rate": 0.0, "last_24h": 0}
+    if get_client() is None or not org_id:
+        return empty
+    try:
+        rows = await asyncio.to_thread(
+            lambda: _tbl("inference_requests").select("decision,created_at")
+            .eq("organization_id", org_id).order("created_at", desc=True).limit(5000).execute())
+        data = rows.data or []
+        out = dict(empty)
+        out["total"] = len(data)
+        for r in data:
+            d = r.get("decision")
+            if d in out:
+                out[d] += 1
+        out["allow_rate"] = round(out["allow"] / out["total"], 3) if out["total"] else 0.0
+        return out
+    except Exception as e:  # noqa: BLE001
+        print("[repo] usage summary failed:", e)
+        return empty
+
+
+async def usage_logs(org_id: str | None, limit: int = 50) -> list[dict]:
+    if get_client() is None or not org_id:
+        return []
+    try:
+        rows = await asyncio.to_thread(
+            lambda: _tbl("inference_requests")
+            .select("request_id,endpoint,decision,reason_code,estimated_age,created_at")
+            .eq("organization_id", org_id).order("created_at", desc=True).limit(limit).execute())
+        return rows.data or []
+    except Exception as e:  # noqa: BLE001
+        print("[repo] usage logs failed:", e)
+        return []
