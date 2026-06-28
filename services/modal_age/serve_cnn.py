@@ -14,6 +14,7 @@ Test:
 import os
 
 import modal
+from fastapi import File, UploadFile
 
 image = (
     modal.Image.debian_slim(python_version="3.11")
@@ -72,9 +73,5 @@ class CNN:
         }
 
     @modal.fastapi_endpoint(method="POST", label="kamari-cnn-serve-endpoint")
-    async def estimate(self, request):
-        form = await request.form()
-        upload = form.get("image")
-        if upload is None:
-            return {"error": "no image"}
-        return self._infer(await upload.read())
+    async def estimate(self, image: UploadFile = File(...)):
+        return self._infer(await image.read())
