@@ -1,8 +1,8 @@
 # Kámárí Data Notebook (run on Google Colab)
 
-One standard notebook — **`kamari_data_pipeline.ipynb`** — takes the free/open datasets
-from raw files to **published Hugging Face datasets**, so the Modal training scripts pull
-the data straight from HF.
+Use **`kamari_data_pipeline_v2.ipynb`** on Google Colab. It keeps the original single-notebook
+flow from **`kamari_data_pipeline.ipynb`**, but expands the gather step to cover every dataset
+named in the recommendations and writes African-focused benchmark/report outputs.
 
 ## What it does
 **1. Gather** licence-cleared datasets → **2. Preprocess** (face-align, crop 224, quality +
@@ -27,9 +27,23 @@ Raw face crops are pushed to a **private** repo only — never public.
 The first cell auto-clones the repo, `pip install`s `requirements-data.txt`, and loads the
 secrets. It also runs locally (falls back to `.env` — see `.env.example`).
 
+For full recommendation coverage, add approved dataset URLs or HF repos as Colab secrets when
+the dataset is not directly open-downloadable: `APPA_REAL_URL`, `ADIENCE_URL`, `AGEDB_URL` or
+`AGEDB_HF_REPO`, `FGNET_URL`, `AAF_URL` or `AAF_HF_REPO`, `FAGE_HF_REPO`,
+`AXONDATA_URL` or `AXONDATA_HF_REPO`, `RFW_URL` or `RFW_HF_REPO`, `BFW_URL` or
+`BFW_HF_REPO`, `CELEBA_SPOOF_URL` or `CELEBA_SPOOF_HF_REPO`, `CEFA_URL`,
+`OULU_NPU_URL`, `CASIA_FACE_AFRICA_URL`, `BVC_UNN_URL`, and `NEFI_URL`.
+
+The v2 notebook records request/agreement-only datasets as access gaps until approved sources
+are supplied; it does not silently drop them.
+
 ## Hand-off
 The final cell prints the HF dataset links. Training reads from `kamari-faces-v0`; nothing
 else is needed to kick off CNN training on Modal.
+
+The v2 notebook also writes `AFRICAN_TAILORING_REPORT.md`, `BENCHMARK_CARD.md`, and fixed
+benchmark split manifests for African signal, Black subset, dark-skin, 13–21 boundary, and
+low-quality-camera slices.
 
 ## Adding a dataset
 Write `data/adapters/<name>.py` exposing `iter_rows(root)` that yields `make_row(...)`
