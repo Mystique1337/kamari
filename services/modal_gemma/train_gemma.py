@@ -29,6 +29,7 @@ image = (
         "torch", "torchvision", "transformers>=4.50", "peft>=0.12", "trl>=0.11", "datasets>=2.20",
         "bitsandbytes>=0.43", "accelerate>=0.33", "huggingface_hub", "wandb", "pillow",
     )
+    .env({"PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"})
 )
 app = modal.App("kamari-gemma-train", image=image)
 out_vol = modal.Volume.from_name("kamari-gemma", create_if_missing=True)
@@ -98,11 +99,12 @@ def train(epochs: int = 3, lr: float = 2e-4, rank: int = 32):
                       task_type="CAUSAL_LM", target_modules="all-linear")
     cfg = SFTConfig(
         output_dir=OUT + "/adapter", num_train_epochs=epochs,
-        per_device_train_batch_size=16, gradient_accumulation_steps=2,
+        per_device_train_batch_size=8, gradient_accumulation_steps=4,
         learning_rate=lr, lr_scheduler_type="cosine", warmup_ratio=0.03, weight_decay=0.01,
-        bf16=True, tf32=True, gradient_checkpointing=False,  # H200 has the memory; skip the recompute
+        bf16=True, tf32=True, gradient_checkpointing=True,
+        gradient_checkpointing_kwargs={"use_reentrant": False},
         dataloader_num_workers=8, dataloader_pin_memory=True,
-        packing=True, neftune_noise_alpha=5, max_length=1024,  # TRL renamed max_seq_length->max_length
+        packing=False, neftune_noise_alpha=5, max_length=512,  # no packing (clean + low mem); short JSON
         logging_steps=20, eval_strategy="epoch", save_strategy="epoch", save_total_limit=2,
         load_best_model_at_end=True, metric_for_best_model="eval_loss", greater_is_better=False,
         run_name=f"gemma4b-lora-r{rank}", report_to=["wandb"] if use_wandb else [],
