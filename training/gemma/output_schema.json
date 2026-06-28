@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "KamariExplanation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["decision", "reason_code", "user_message", "admin_summary", "next_step", "language", "safety_note"],
+  "properties": {
+    "decision": {
+      "type": "string",
+      "enum": ["allow", "block", "secondary_check", "recapture"]
+    },
+    "reason_code": {
+      "type": "string",
+      "enum": [
+        "ALLOW",
+        "BLOCK_LIKELY_MINOR",
+        "SECONDARY_CHECK_NEAR_THRESHOLD",
+        "SECONDARY_CHECK_LOW_CONFIDENCE",
+        "RECAPTURE_LOW_QUALITY",
+        "RECAPTURE_NO_FACE",
+        "RECAPTURE_MULTIPLE_FACES",
+        "ERROR_UNSUPPORTED_IMAGE"
+      ]
+    },
+    "user_message": { "type": "string", "minLength": 1, "maxLength": 240 },
+    "admin_summary": { "type": "string", "minLength": 1, "maxLength": 240 },
+    "next_step": {
+      "type": "string",
+      "enum": ["proceed", "request_id_or_guardian_flow", "retake_photo", "manual_review"]
+    },
+    "language": { "type": "string" },
+    "safety_note": { "type": "string", "minLength": 1 }
+  }
+}
