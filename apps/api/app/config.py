@@ -11,9 +11,12 @@ class Settings(BaseSettings):
     modal_age_endpoint: str = ""
     modal_gemma_endpoint: str = ""
 
-    # Supabase (logging/audit). Optional in dev.
+    # Supabase / Postgres (logging/audit). Optional in dev.
+    # Self-hosted + sub-schema: connect directly via DATABASE_URL to the `kamari` schema.
     supabase_url: str = ""
     supabase_service_role_key: str = ""
+    database_url: str = ""
+    supabase_db_schema: str = "kamari"
 
     # Security
     api_key_pepper: str = "dev-pepper-change-me"

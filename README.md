@@ -21,6 +21,9 @@ data/   training/{cnn, gemma}   benchmarks/   infra/   docs/
 ## Privacy posture (default)
 No raw face images or embeddings stored by default · metadata + audit logs only · retention visible in API and UI · **1:1 verification only, never 1:N face search** · every age result is an estimate, not a legal determination.
 
+## Setup
+- **[`docs/SETUP.md`](docs/SETUP.md)** — tier-by-tier setup: app, local gateway, self-hosted Supabase sub-schema, Railway, Modal, native.
+
 ## Repo tooling
 - **Skills matrix:** [`docs/skills_matrix.md`](docs/skills_matrix.md) — full skill inventory + installed Claude Code plugins + project skills.
 - **Claude Code plugins:** enabled in `.claude/settings.json`.
