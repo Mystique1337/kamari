@@ -28,6 +28,7 @@ image = (
     .pip_install(
         "torch", "torchvision", "timm", "onnx", "onnxruntime",
         "huggingface_hub", "pandas", "pyarrow", "pillow", "numpy", "scikit-learn", "wandb",
+        "onnxscript",  # torch>=2.9 ONNX exporter dependency
     )
 )
 app = modal.App("kamari-cnn-train", image=image)
@@ -116,12 +117,22 @@ def train(epochs: int = 30, backbone: str = "tf_efficientnetv2_s",
             "Set KAMARI_TRUSTED_AGE_DATASETS to your verified-exact-age datasets.")
     print(f"trusted training rows: {len(df)} from {sorted(set(df['dataset']))}")
 
-    def _holdout(key):
-        return (int(hashlib.md5(str(key).encode()).hexdigest()[:8], 16) / 0xFFFFFFFF) < val_frac
-    key = df["subject_id"].where(df["subject_id"].notna() & (df["subject_id"].astype(str) != ""), df["image_id"])
-    is_val = key.map(_holdout)
+    key = df["subject_id"].where(df["subject_id"].notna() & (df["subject_id"].astype(str) != ""), df["image_id"]).astype(str)
+    hk = key.map(lambda k: int(hashlib.md5(k.encode()).hexdigest(), 16) % 10000)
+    is_val = hk < int(round(val_frac * 10000))
+    if int(is_val.sum()) in (0, len(df)):  # degenerate keys -> random split fallback
+        rng = np.random.RandomState(seed)
+        is_val = pd.Series(rng.rand(len(df)) < val_frac, index=df.index)
     train_df, val_df = df[~is_val].reset_index(drop=True), df[is_val].reset_index(drop=True)
+
     bench = _read("manifest_benchmark_v0.parquet")
+    if bench is not None and len(bench):
+        bench = bench[bench["age"].notna() & bench["age"].between(1, 100)]
+        bench = bench[bench["path"].map(lambda p: os.path.exists(os.path.join(data_dir, str(p))))]
+        cap = int(os.environ.get("KAMARI_BENCH_MAX", "40000"))
+        if len(bench) > cap:
+            bench = bench.sample(cap, random_state=seed)
+        bench = bench.reset_index(drop=True)
     print(f"train {len(train_df)} | val {len(val_df)} | benchmark {0 if bench is None else len(bench)}")
 
     # ---------------- composite sampling weights ----------------
@@ -307,9 +318,12 @@ def train(epochs: int = 30, backbone: str = "tf_efficientnetv2_s",
 
     # exports + reports
     dummy = torch.randn(1, 3, 224, 224, device=device)
-    torch.onnx.export(model, dummy, os.path.join(CKPT, "cnn_v0.onnx"), input_names=["input"],
-                      output_names=["age", "minor_logit", "logvar"],
-                      dynamic_axes={"input": {0: "batch"}}, opset_version=17)
+    try:
+        torch.onnx.export(model, dummy, os.path.join(CKPT, "cnn_v0.onnx"), input_names=["input"],
+                          output_names=["age", "minor_logit", "logvar"],
+                          dynamic_axes={"input": {0: "batch"}}, opset_version=17)
+    except Exception as e:
+        print("ONNX export failed (continuing; best.pt still saved/pushed):", e)
     thr = {"block_p_under_18": BLOCK_P, "challenge_age": 21, "uncertainty": 0.28, "min_quality": 0.40,
            "mean": MEAN, "std": STD}
     json.dump(thr, open(os.path.join(CKPT, "thresholds_v0.json"), "w"), indent=2)
