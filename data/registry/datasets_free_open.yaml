@@ -1,0 +1,171 @@
+# Kámárí dataset registry — free/open & free-for-research only.
+# role: train | auxiliary | benchmark | agreement_only | exclude
+# access: open_download | kaggle | hf | request | agreement
+# Every dataset MUST be classified before any image enters the manifest.
+# See licenses.md for full licence text pointers and sources.md for URLs.
+
+version: v0
+updated: 2026-06-28
+
+datasets:
+  # ---------- A. Exact-age training (CNN age regression + under-18) ----------
+  - name: UTKFace
+    role: train
+    access: kaggle
+    has_exact_age: true
+    license: non-commercial research
+    consent_basis: public web faces, research use
+    usable_for: [age]
+    region_signal: mixed
+    notes: Exact age, gender, broad ethnicity. Pretraining/regression. Not for commercial use.
+
+  - name: APPA-REAL
+    role: train
+    access: open_download
+    has_exact_age: true
+    license: research
+    consent_basis: research collection (real + apparent age)
+    usable_for: [age]
+    region_signal: mixed
+    notes: Real and apparent age. Strong for calibration/validation near boundaries.
+
+  - name: AgeDB
+    role: train
+    access: request
+    has_exact_age: true
+    license: research, request access
+    consent_basis: research collection
+    usable_for: [age, verification]
+    region_signal: mixed
+    notes: Age, gender, identity. Also provides age-invariant verification pairs (AgeDB-30).
+
+  - name: FG-NET
+    role: train
+    access: open_download
+    has_exact_age: true
+    license: research
+    consent_basis: research collection
+    usable_for: [age]
+    region_signal: mixed
+    notes: Small longitudinal aging set. Sanity check for aging, not a primary trainer.
+
+  - name: All-Age-Faces
+    role: auxiliary
+    access: open_download
+    has_exact_age: true
+    license: research
+    consent_basis: public figures / web
+    usable_for: [age]
+    region_signal: asian_heavy
+    notes: Exact age but mostly Asian. Pretraining only; do not treat as African signal.
+
+  - name: IMDB-WIKI
+    role: auxiliary
+    access: open_download
+    has_exact_age: true
+    license: non-commercial research
+    consent_basis: celebrity web images
+    usable_for: [age]
+    region_signal: western_heavy
+    notes: Large but noisy. Use ONLY after strict cleaning. Never as 18-boundary truth.
+
+  - name: AxonData-10-30
+    role: auxiliary
+    access: hf
+    has_exact_age: true
+    license: CC-BY-NC (verify)
+    consent_basis: verify dataset terms before use
+    usable_for: [age]
+    region_signal: mixed
+    notes: 10–30 boundary research sample. Include only if licence + consent terms accepted.
+
+  # ---------- B. African-domain signal ----------
+  - name: FAGE_v2
+    role: train
+    access: hf
+    has_exact_age: partial
+    license: research (verify)
+    consent_basis: African public-figure images, 10 countries
+    usable_for: [age]
+    region_signal: african
+    notes: Use rows with usable/resolvable age. Key African-domain adaptation signal.
+
+  - name: FairFace
+    role: benchmark
+    access: open_download
+    has_exact_age: false
+    license: CC BY 4.0
+    consent_basis: balanced race/gender/age brackets
+    usable_for: [age, fairness]
+    region_signal: balanced
+    notes: Bracketed ages. Black subset for fairness/age-band EVAL. Not exact 18-truth.
+
+  # ---------- C. Face-verification benchmarks ----------
+  - name: LFW
+    role: benchmark
+    access: open_download
+    license: research
+    consent_basis: public web faces
+    usable_for: [verification]
+    region_signal: western_heavy
+    notes: General verification sanity benchmark.
+
+  - name: RFW
+    role: benchmark
+    access: request
+    license: research, request access
+    consent_basis: research collection
+    usable_for: [verification, fairness]
+    region_signal: balanced_by_race
+    notes: African subset is the key fairness verification benchmark.
+
+  - name: BFW
+    role: benchmark
+    access: request
+    license: research, request access
+    consent_basis: research collection
+    usable_for: [verification, fairness]
+    region_signal: balanced_by_subgroup
+    notes: Balanced subgroup threshold-drift benchmark.
+
+  # ---------- D. Liveness / anti-spoof benchmarks ----------
+  - name: CelebA-Spoof
+    role: benchmark
+    access: request
+    license: research
+    consent_basis: research collection
+    usable_for: [liveness]
+    region_signal: mixed
+    notes: Large anti-spoofing dataset.
+
+  # ---------- E. Agreement-only (NOT in free/open v0 unless approved) ----------
+  - name: CASIA-Face-Africa
+    role: agreement_only
+    access: agreement
+    license: research/education, no redistribution
+    usable_for: [verification, age]
+    region_signal: african
+    notes: Highly relevant. Excluded from v0 until access approved + licence allows use.
+
+  - name: BVC-UNN
+    role: agreement_only
+    access: request
+    license: free after formal request
+    usable_for: [verification]
+    region_signal: nigerian
+    notes: Nigerian diversity. Include only after formal request approved.
+
+  - name: NEFI
+    role: agreement_only
+    access: request
+    license: verify
+    usable_for: [verification]
+    region_signal: nigerian
+    notes: Nigerian diversity. Verify download + training terms before use.
+
+  # ---------- F. Explicitly excluded ----------
+  - name: MS-Celeb-1M
+    role: exclude
+    access: none
+    license: withdrawn
+    notes: Consent/reputation problem, withdrawn. Do not use, including derivatives.
