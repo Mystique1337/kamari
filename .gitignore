@@ -1,6 +1,5 @@
-# --- Claude Code ---
-# Keep settings.json tracked; keep local overrides private
-.claude/settings.local.json
+# --- Claude Code (internal authoring config; kept local, not part of the public deliverable) ---
+.claude/
 
 # --- Node / frontend (apps/kamari_app) ---
 node_modules/
