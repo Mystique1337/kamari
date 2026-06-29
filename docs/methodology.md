@@ -48,8 +48,9 @@ never published publicly.
 - **Augmentation:** random resized crop, horizontal flip, small rotation, mild brightness/contrast
   jitter. No hue/saturation jitter (would corrupt age and skin signal).
 - **Training:** 30 epochs, batch 512, AdamW (lr 3e-4, wd 1e-4), cosine schedule with warmup, bf16 +
-  TF32 + channels_last, on an H200. Per-epoch checkpointing (resumable). Model selection minimizes a
-  safety composite `score = MAE + 5 x MPTR@18`.
+  TF32 + channels_last, on an H200 (about 15 minutes wall-clock; the full run is tracked in Weights
+  & Biases, project `kamari`). 22,224 train / 2,529 val exact-age rows. Per-epoch checkpointing
+  (resumable). Model selection minimizes a safety composite `score = MAE + 5 x MPTR@18`.
 - **Export:** ONNX (opset 17) plus the PyTorch checkpoint. W&B logging when configured.
 
 **Results (held-out, n=8,322).** MAE 6.03; MPTR@18 0.317 (dark+brown 0.383); MPTR@21 0.27;
@@ -89,8 +90,9 @@ min quality 0.40):
 - **Decoding:** a manual KV-cached greedy decode (the multimodal Gemma 4 `generate()` has a
   tensor-shape bug, so it is avoided in both training-eval and serving).
 
-**Eval.** Training loss converged from 3.00 to 0.087. Evaluated through the served endpoint (the
-manual decode used in production) over n=70 cases across 5 reason codes and 7 languages: JSON
+**Eval.** Training loss converged from 3.00 to a best eval loss of 0.087, at 96.3% eval token
+accuracy (3 epochs / 675 steps, about 35 minutes on an H200; tracked in Weights & Biases, project
+`kamari`). Evaluated through the served endpoint (the manual decode used in production) over n=70 cases across 5 reason codes and 7 languages: JSON
 validity 1.00, schema compliance 1.00, decision consistency 1.00, policy consistency 1.00, language
 correctness 1.00, invented-code rate 0.00. The endpoint validates and falls back to an approved
 template on any model failure, so the system always returns valid, schema-correct, policy-consistent

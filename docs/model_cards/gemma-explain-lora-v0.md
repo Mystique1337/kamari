@@ -34,7 +34,9 @@ Synthesized from the Kámárí policy engine, not from child faces: sampled sign
 reason-code balanced (so it is not dominated by ALLOW): 8,000 rows, 7,200 train / 800 eval.
 
 ## Evaluation
-Training loss converged from 3.00 to 0.087 (best eval_loss 0.087). Evaluated through the **served
+Training loss converged from 3.00 to a best eval loss of 0.087, at 96.3% eval token accuracy
+(3 epochs / 675 steps, about 35 minutes on an H200; tracked in Weights & Biases, project `kamari`).
+Evaluated through the **served
 endpoint** (the manual KV-cached greedy decode used in production, not the buggy `generate()` path),
 over **n=70** cases across 5 reason codes and 7 languages (en, sw, yo, ha, am, fr, ar):
 

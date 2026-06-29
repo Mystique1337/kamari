@@ -18,7 +18,9 @@ under 18, and an uncertainty, from a single face crop. **It is a signal, not a s
 
 - Backbone: EfficientNetV2-S (`tf_efficientnetv2_s`), ImageNet-pretrained.
 - Heads: age regression, under-18 logit, heteroscedastic (aleatoric) uncertainty.
-- Trained 30 epochs on an H200. Selection minimizes `MAE + 5 x MPTR@18` (a child-safety composite).
+- Trained 30 epochs on an H200 (batch 512, AdamW lr 3e-4 wd 1e-4, cosine schedule, bf16; ~15 min
+  wall-clock; 22,224 train / 2,529 val exact-age rows). Selection minimizes `MAE + 5 x MPTR@18`
+  (a child-safety composite). The full run is tracked in Weights & Biases (project `kamari`).
 
 ## Intended use
 Input: one detected, cropped, 224x224 RGB face. Output: `{estimated_age, p_under_18, uncertainty,

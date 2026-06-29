@@ -36,9 +36,10 @@ more 13 to 17 and African-labelled data.
 ```bash
 modal run services/modal_age/train_cnn.py            # or modal run --detach for long runs
 ```
-Pulls `Shinzmann/kamari-faces-v0`, trains 30 epochs (H200), checkpoints to a Modal Volume
-(resumable), and pushes `best.pt`, `cnn_v0.onnx`, `thresholds_v0.json`, `metrics_v0.json`, and
-reports to `Shinzmann/cnn-age-v0`. W&B logging when `WANDB_API_KEY` is set.
+Pulls `Shinzmann/kamari-faces-v0`, trains 30 epochs (H200, batch 512, ~15 min wall-clock),
+checkpoints to a Modal Volume (resumable), and pushes `best.pt`, `cnn_v0.onnx`,
+`thresholds_v0.json`, `metrics_v0.json`, and reports to `Shinzmann/cnn-age-v0`. W&B logging when
+`WANDB_API_KEY` is set (the v0 run is tracked in project `kamari`).
 
 ## Serve (CPU, always-on)
 ```bash

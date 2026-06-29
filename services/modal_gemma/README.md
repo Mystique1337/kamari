@@ -20,7 +20,8 @@ decision; it never estimates age and never invents a reason code.
 Full method: [`docs/methodology.md`](../../docs/methodology.md).
 
 ## Eval
-Training loss converged from 3.00 to 0.087. Evaluated through the served endpoint (the manual decode
+Training loss converged from 3.00 to a best eval loss of 0.087, at 96.3% eval token accuracy
+(3 epochs / 675 steps, ~35 min on H200; tracked in W&B project `kamari`). Evaluated through the served endpoint (the manual decode
 used in production) over n=70 cases across 5 reason codes and 7 languages: JSON validity 1.00, schema
 compliance 1.00, decision consistency 1.00, policy consistency 1.00, language correctness 1.00,
 invented-code rate 0.00. The endpoint validates and falls back to an approved template on any failure,

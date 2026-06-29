@@ -103,6 +103,10 @@ strict-JSON, in-language messages and never estimates age. Evaluated through the
 consistency, and language correctness all **1.00**, invented-code rate **0.00**. The endpoint
 guarantees valid JSON via an approved-template fallback. See `services/modal_gemma/README.md`.
 
+Both runs are tracked in **Weights & Biases** (project `kamari`). The CNN run (30 epochs, batch 512,
+H200, ~15 min) logs the benchmark numbers above; the Gemma run (3 epochs / 675 steps, ~35 min)
+converges to a best eval loss of **0.087** at **96.3%** token accuracy.
+
 ## Dataset and benchmark (Kámárí-Safe Open v0)
 Built from open, license-checked face datasets with an auto label-quality gate, MTCNN face crops,
 skin-tone (ITA) banding, and a leakage-free split. Composition: ~480,828 kept rows; 24,753 exact-age
