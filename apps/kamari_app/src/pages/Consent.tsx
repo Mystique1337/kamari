@@ -32,7 +32,7 @@ export default function Consent() {
           <IonTitle>Before we start</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="kamari-bg kamari-pad">
+      <IonContent className="kamari-pad">
         <p className="kamari-eyebrow" style={{ color: 'var(--kamari-terracotta)' }}>Privacy first</p>
         <h2 style={{ marginTop: 6 }}>How Kámárí treats your photo</h2>
 

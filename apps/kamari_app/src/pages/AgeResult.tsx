@@ -46,7 +46,7 @@ export default function AgeResult() {
 
   return (
     <IonPage>
-      <IonContent className="kamari-bg">
+      <IonContent>
         <div className="kamari-hero kamari-pattern" style={{ padding: '40px 24px 28px', textAlign: 'center' }}>
           <IonIcon icon={v.icon} style={{ fontSize: 72, color: 'var(--kamari-gold)' }} />
           <h1 style={{ color: 'var(--kamari-cream)', margin: '12px 0 0' }}>{v.label}</h1>

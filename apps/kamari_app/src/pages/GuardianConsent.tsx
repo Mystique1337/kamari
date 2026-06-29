@@ -55,7 +55,7 @@ export default function GuardianConsent() {
           <IonTitle>Guardian check</IonTitle>
         </IonToolbar>
       </IonHeader>
-      <IonContent className="kamari-bg kamari-pad">
+      <IonContent className="kamari-pad">
         {approved ? (
           <div className="kamari-center" style={{ marginTop: 48 }}>
             <IonIcon icon={checkmarkCircle} style={{ fontSize: 72, color: 'var(--kamari-green)' }} />

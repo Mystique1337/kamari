@@ -71,7 +71,7 @@ export default function Welcome() {
 
   return (
     <IonPage>
-      <IonContent fullscreen className="mkt kamari-bg">
+      <IonContent fullscreen className="mkt">
         {/* Nav */}
         <nav className="mkt-nav">
           <span className="brand">Kámárí</span>
@@ -270,7 +270,7 @@ export default function Welcome() {
               </div>
               <div className="kamari-card kamari-pad">
                 <strong>Contact</strong>
-                <p className="kamari-muted" style={{ margin: '4px 0 0', fontSize: '.9rem' }}>team@catalyzu.io</p>
+                <p className="kamari-muted" style={{ margin: '4px 0 0', fontSize: '.9rem' }}>chidi.ashinze@gmail.com</p>
               </div>
             </div>
           </div>

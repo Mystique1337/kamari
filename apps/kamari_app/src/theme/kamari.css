@@ -5,8 +5,31 @@ h1, h2, h3, .kamari-display {
   letter-spacing: -0.01em;
 }
 
-ion-content.kamari-bg {
-  --background: var(--kamari-cream);
+/* Signature canvas: the whole product sits on the Adire indigo gradient with a fixed
+   Adinkra pattern. Content lives in readable cards on top. */
+body {
+  background:
+    radial-gradient(120% 80% at 80% -10%, var(--kamari-indigo-soft) 0%, transparent 55%),
+    linear-gradient(160deg, var(--kamari-indigo) 0%, var(--kamari-indigo-deep) 100%);
+  background-attachment: fixed;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.10;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%23E8B84B' stroke-width='1.4'%3E%3Cpath d='M36 6l30 30-30 30L6 36z'/%3E%3Cpath d='M36 22l14 14-14 14-14-14z'/%3E%3Ccircle cx='36' cy='36' r='3' fill='%23E8B84B' stroke='none'/%3E%3Cpath d='M0 36h12M60 36h12M36 0v12M36 60v12'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 72px 72px;
+}
+ion-app { background: transparent; }
+/* By default, content is transparent (shows the indigo canvas) with cream text. */
+ion-content { --background: transparent; --color: var(--kamari-cream); }
+/* Utilitarian / dense screens (developer portal) keep a clean opaque surface. */
+ion-content.kamari-bg { --background: var(--kamari-cream); --color: var(--kamari-ink); }
+
+/* On the indigo canvas, ghost buttons use cream (not indigo) so they stay visible. */
+ion-content:not(.kamari-bg) ion-button[fill="outline"],
+ion-content:not(.kamari-bg) ion-button[fill="clear"] {
+  --color: var(--kamari-cream);
+  --border-color: rgba(246, 239, 226, 0.5);
 }
 
 /* Indigo hero surface used on Welcome / Result headers */
@@ -50,9 +73,10 @@ ion-content.kamari-bg {
   );
 }
 
-/* Cards */
+/* Cards (always a readable opaque surface, even on the indigo canvas) */
 .kamari-card {
   background: var(--ion-card-background, #fff);
+  color: var(--kamari-ink);
   border-radius: var(--kamari-radius);
   box-shadow: var(--kamari-shadow);
   border: 1px solid var(--kamari-card-border);
@@ -102,7 +126,8 @@ ion-button.kamari-btn {
   color: var(--kamari-gold);
 }
 
-.kamari-muted { color: var(--kamari-ink-soft); }
+/* Muted text dims whatever colour it sits on: cream on the canvas, ink inside cards. */
+.kamari-muted { color: inherit; opacity: 0.72; }
 
 .kamari-stack > * + * { margin-top: 14px; }
 .kamari-center { text-align: center; }

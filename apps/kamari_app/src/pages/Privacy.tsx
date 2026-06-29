@@ -38,7 +38,7 @@ export default function Privacy() {
 
           <h3>Your rights</h3>
           <p>You can request access to or deletion of your account data. Contact us at
-          team@catalyzu.io.</p>
+          chidi.ashinze@gmail.com.</p>
 
           <p className="kamari-muted" style={{ fontSize: '.85rem', marginTop: 24 }}>
             This is an estimate, not a legal age determination.
