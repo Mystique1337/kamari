@@ -1,7 +1,7 @@
 import { IonContent, IonPage, IonButton, IonIcon } from '@ionic/react';
 import {
   arrowForward, eyeOffOutline, globeOutline, flashOutline, shieldCheckmarkOutline,
-  sparklesOutline, logoGithub, copyOutline, checkmarkOutline, logoAndroid,
+  sparklesOutline, logoGithub, copyOutline, checkmarkOutline, logoAndroid, openOutline,
 } from 'ionicons/icons';
 import { useState, type CSSProperties } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -218,43 +218,52 @@ export default function Welcome() {
               critical 13 to 21 boundary, not just an average.
             </p>
 
-            <div className="mkt-grid" style={{ marginTop: 22 }}>
-              {[['825,129', 'images gathered'], ['480,828', 'kept after cleaning'],
-                ['24,753', 'exact-age training rows'], ['10,182', 'African-signal rows'],
-                ['3,139', 'in the 13 to 21 boundary'], ['8,322', 'held-out benchmark']].map(([n, l]) => (
-                <div key={l} className="kamari-card mkt-stat"><div className="num">{n}</div><div className="lbl">{l}</div></div>
-              ))}
+            {/* Headline numbers */}
+            <div className="mkt-herostats" style={{ justifyContent: 'flex-start', margin: '26px 0 8px' }}>
+              <div className="mkt-herostat"><div className="n">6.03 yrs</div><div className="l">Mean absolute error</div></div>
+              <div className="mkt-herostat"><div className="n">0.317</div><div className="l">MPTR@18 (lower is better)</div></div>
+              <div className="mkt-herostat"><div className="n">1%</div><div className="l">Adults wrongly blocked</div></div>
+              <div className="mkt-herostat"><div className="n">~14 ms</div><div className="l">Model inference</div></div>
             </div>
 
-            <div className="mkt-grid-3" style={{ marginTop: 24, alignItems: 'start' }}>
-              <div className="kamari-card kamari-pad">
-                <h3 style={{ marginTop: 0 }}>Accuracy</h3>
-                <table className="mkt-table">
-                  <tbody>
-                    <tr><td>MAE</td><td><strong>6.03 yrs</strong></td></tr>
-                    <tr><td>MPTR@18</td><td>0.317</td></tr>
-                    <tr><td>MPTR@18, dark + brown</td><td>0.383</td></tr>
-                    <tr><td>Adults wrongly blocked</td><td>1%</td></tr>
-                    <tr><td>Model inference</td><td>~14 ms</td></tr>
-                  </tbody>
-                </table>
+            <div className="mkt-grid" style={{ marginTop: 16 }}>
+              <div className="mkt-panel">
+                <h3>From raw images to a clean training set</h3>
+                <p className="cap">The funnel after gathering, the auto label-quality gate, and face cropping.</p>
+                <div className="mkt-chart">
+                  {([['Images gathered', 825129], ['Kept after cleaning', 480828], ['Exact-age training', 24753]] as [string, number][]).map(([l, v]) => (
+                    <div className="mkt-barrow" key={l}>
+                      <span className="lbl">{l}</span>
+                      <span className="track"><span className="fill" style={{ width: `${(v / 825129) * 100}%` }} /></span>
+                      <span className="val">{v.toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="kamari-card kamari-pad">
-                <h3 style={{ marginTop: 0 }}>MAE by skin band</h3>
-                <table className="mkt-table">
-                  <tbody>{MAE_BY_SKIN.map(([b, v]) => (<tr key={b}><td>{b}</td><td>{v} yrs</td></tr>))}</tbody>
-                </table>
+              <div className="mkt-panel">
+                <h3>MAE by skin band</h3>
+                <p className="cap">Years of error per skin-tone band. Lower is better; the spread stays tight.</p>
+                <div className="mkt-chart">
+                  {MAE_BY_SKIN.map(([b, v]) => (
+                    <div className="mkt-barrow" key={b}>
+                      <span className="lbl">{b}</span>
+                      <span className="track"><span className="fill" style={{ width: `${(parseFloat(v) / 8) * 100}%` }} /></span>
+                      <span className="val">{v} yrs</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="kamari-card kamari-pad">
-                <h3 style={{ marginTop: 0 }}>How we evaluate</h3>
-                <p className="kamari-muted" style={{ fontSize: '.92rem', lineHeight: 1.6 }}>
-                  The headline metric is <strong>Minor-Pass-Through Rate</strong>, the share of true
-                  minors passed as adults, reported overall, at 21, and for dark and brown skin. The
-                  CNN is a signal, not a standalone gate: the policy engine, liveness, and guardian
-                  flow provide the safety margin.
-                </p>
-                <a href="https://github.com/Mystique1337/kamari/blob/main/docs/methodology.md" target="_blank" rel="noreferrer" style={{ color: 'var(--kamari-indigo)', fontWeight: 600, fontSize: '.9rem' }}>Read the methodology</a>
-              </div>
+            </div>
+
+            <div className="mkt-panel" style={{ marginTop: 16 }}>
+              <h3>How we evaluate</h3>
+              <p className="cap" style={{ marginBottom: 8, lineHeight: 1.6 }}>
+                The headline metric is Minor-Pass-Through Rate, the share of true minors passed as
+                adults, reported overall, at 21, and for dark and brown skin. The CNN is a signal, not
+                a standalone gate: the policy engine, liveness, and secondary checks provide the safety
+                margin. The benchmark is leakage-free with 8,322 held-out faces across fairness slices.
+              </p>
+              <a href="https://github.com/Mystique1337/kamari/blob/main/docs/methodology.md" target="_blank" rel="noreferrer" style={{ color: 'var(--kamari-gold)', fontWeight: 600, fontSize: '.9rem' }}>Read the methodology</a>
             </div>
           </div>
         </section>
@@ -289,12 +298,12 @@ export default function Welcome() {
             <div className="mkt-grid" style={{ marginTop: 22 }}>
               {ARTIFACTS.map((a) => (
                 <a key={a.title} href={a.href} target="_blank" rel="noreferrer"
-                  className="kamari-card kamari-pad" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
-                  <span className="kamari-badge" style={{ background: 'rgba(33,58,107,.1)', color: 'var(--kamari-indigo)' }}>{a.tag}</span>
+                  className="mkt-panel" style={{ textDecoration: 'none', display: 'block', color: 'var(--kamari-cream)' }}>
+                  <span className="kamari-badge" style={{ background: 'rgba(232,184,75,.16)', color: 'var(--kamari-gold)' }}>{a.tag}</span>
                   <h3 style={{ margin: '10px 0 4px' }}>{a.title}</h3>
-                  <p className="kamari-muted" style={{ margin: 0, fontSize: '.9rem' }}>{a.desc}</p>
-                  <span style={{ color: 'var(--kamari-indigo)', fontWeight: 600, fontSize: '.85rem', display: 'inline-block', marginTop: 10 }}>
-                    View on Hugging Face
+                  <p className="cap" style={{ margin: 0 }}>{a.desc}</p>
+                  <span style={{ color: 'var(--kamari-gold)', fontWeight: 600, fontSize: '.85rem', display: 'inline-flex', gap: 6, alignItems: 'center', marginTop: 12 }}>
+                    View on Hugging Face <IonIcon icon={openOutline} />
                   </span>
                 </a>
               ))}

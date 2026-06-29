@@ -62,6 +62,21 @@
 .mkt-tab { all: unset; cursor: pointer; padding: 6px 12px; border-radius: 999px; font-size: .82rem; color: var(--kamari-ink-soft); border: 1px solid var(--kamari-card-border); }
 .mkt-tab.active { background: var(--kamari-indigo); color: #fff; border-color: var(--kamari-indigo); }
 
+/* Charts (CSS bar charts on the indigo canvas) */
+.mkt-chart { margin-top: 8px; }
+.mkt-barrow { display: flex; align-items: center; gap: 12px; margin: 10px 0; }
+.mkt-barrow .lbl { width: 116px; font-size: .85rem; color: rgba(246, 239, 226, 0.85); flex-shrink: 0; text-align: right; }
+.mkt-barrow .track { flex: 1; height: 14px; border-radius: 8px; background: rgba(246, 239, 226, 0.12); overflow: hidden; }
+.mkt-barrow .fill { height: 100%; border-radius: 8px; background: linear-gradient(90deg, var(--kamari-gold), var(--kamari-terracotta)); min-width: 3px; }
+.mkt-barrow .val { width: 64px; font-size: .85rem; font-weight: 600; color: var(--kamari-cream); flex-shrink: 0; }
+.mkt-panel { background: rgba(13, 24, 48, 0.28); border: 1px solid rgba(232, 184, 75, 0.16); border-radius: var(--kamari-radius); padding: 20px; }
+.mkt-panel h3 { margin: 0 0 6px; color: var(--kamari-cream); }
+.mkt-panel .cap { color: rgba(246, 239, 226, 0.7); font-size: .82rem; margin: 0 0 12px; }
+
+/* External-resource link card */
+a.mkt-res { display: flex; align-items: center; gap: 14px; text-decoration: none; }
+a.mkt-res .ext { margin-left: auto; color: var(--kamari-indigo); }
+
 /* Footer */
 .mkt-footer { padding: 40px 0; border-top: 1px solid rgba(232, 184, 75, 0.18); color: rgba(246, 239, 226, 0.8); font-size: .88rem; }
 .mkt-footer a, .mkt-footer .link { color: rgba(246, 239, 226, 0.8); }
