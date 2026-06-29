@@ -59,14 +59,10 @@ def _load():
     _cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 
 
-@app.on_event("startup")
-def _startup():
-    _load()
-
-
 @app.get("/health")
 def health():
-    return {"status": "ok", "model_version": MODEL_VERSION}
+    # Live immediately; the model loads lazily on the first /estimate call.
+    return {"status": "ok", "model_version": MODEL_VERSION, "model_loaded": _model is not None}
 
 
 def _infer(image_bytes: bytes) -> dict:
@@ -106,4 +102,5 @@ def _infer(image_bytes: bytes) -> dict:
 
 @app.post("/estimate")
 async def estimate(image: UploadFile = File(...)):
+    _load()  # lazy: download + load weights on first request
     return _infer(await image.read())
