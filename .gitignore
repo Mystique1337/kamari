@@ -38,6 +38,18 @@ outputs/
 *.parquet
 weights/
 
+# --- Internal planning docs (kept local, not part of the public deliverable) ---
+docs/master_plan.md
+docs/skills_matrix.md
+docs/codex_skills_inventory.md
+docs/dataset_recommendation.md
+
+# --- Generated training data + send-out kit (kept local) ---
+training/gemma/sft_train.jsonl
+training/gemma/sft_eval.jsonl
+demo_kit/
+demo_kit.zip
+
 # --- OS / editor ---
 .DS_Store
 Thumbs.db

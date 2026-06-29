@@ -145,7 +145,6 @@ estimate, not a legal determination.
 ## Setup and deploy
 - [`docs/SELF_HOSTING.md`](docs/SELF_HOSTING.md) - run the whole stack on your own infrastructure with one `docker compose up` (CPU, no GPU needed).
 - [`docs/SETUP.md`](docs/SETUP.md) - local run, Supabase, Modal, Railway, native build.
-- [`docs/master_plan.md`](docs/master_plan.md) - the web-first product plan.
 - CI/CD: GitHub Actions run tests + app build, build the Android APK, and auto-deploy to Railway
   (set `RAILWAY_TOKEN`).
 
