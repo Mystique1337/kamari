@@ -1,0 +1,42 @@
+name: Self-host Docker
+
+# Builds the self-host images (CPU CNN, gateway, web) and validates the compose file,
+# so the "docker compose up" path stays green. Build only; nothing is pushed.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'services/selfhost_cnn/**'
+      - 'apps/api/**'
+      - 'apps/kamari_app/Dockerfile'
+      - 'apps/kamari_app/nginx.conf'
+      - 'infra/docker/**'
+      - '.github/workflows/selfhost-docker.yml'
+
+jobs:
+  build-images:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate compose file
+        run: docker compose -f infra/docker/docker-compose.yml config -q
+
+      - name: Build CPU CNN image
+        run: docker build -t kamari-cnn services/selfhost_cnn
+
+      - name: Build gateway image
+        run: docker build -t kamari-api apps/api
+
+      - name: Build web image
+        run: docker build -t kamari-web --build-arg VITE_USE_MOCK=1 apps/kamari_app
+
+      - name: Smoke-test the CNN image
+        run: |
+          docker run -d --name cnn -p 8001:8001 kamari-cnn
+          for i in $(seq 1 30); do
+            curl -fsS http://localhost:8001/health && break || sleep 5
+          done
+          curl -fsS http://localhost:8001/health
+          docker rm -f cnn

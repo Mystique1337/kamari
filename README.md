@@ -12,11 +12,22 @@ uncertainty), a **policy engine** turns that into a decision, and a fine-tuned *
 writes the human, in-language explanation as strict JSON. A FastAPI gateway orchestrates it; an
 Ionic React + Capacitor client ships to web, PWA, and Android.
 
+```mermaid
+flowchart LR
+  U([User selfie]) --> APP[Web / PWA / Android<br/>Ionic React + Capacitor]
+  APP -->|POST /v1/age/estimate| GW[FastAPI gateway<br/>Railway]
+  GW --> CNN[CNN age model<br/>Modal CPU, face crop]
+  CNN --> POL{Policy engine<br/>conservative 18 to 21}
+  POL -->|explain| GEM[Gemma LoRA<br/>Modal GPU]
+  POL --> DEC([Decision<br/>allow · secondary_check · block · recapture])
+  GEM --> DEC
+  GW -. auth, keys, usage .-> SB[(Supabase<br/>GoTrue + REST)]
+  GW -. transactional email .-> N8N[n8n]
+  CNN -. weights .-> HF[(Hugging Face<br/>models · benchmark)]
+  GEM -. adapter .-> HF
 ```
-Selfie ─▶ CNN (age, p<18, uncertainty, quality)
-            └─▶ Policy engine ─▶ decision (allow | secondary_check | block | recapture)
-                                   └─▶ Gemma ─▶ strict-JSON, in-language message
-```
+
+The image is processed once and never stored; only decision metadata is logged.
 
 ## Decisions
 | Decision | Meaning |
