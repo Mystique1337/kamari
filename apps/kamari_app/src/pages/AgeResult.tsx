@@ -3,7 +3,7 @@ import {
 } from '@ionic/react';
 import {
   checkmarkCircle, shieldCheckmark, alertCircle, refreshCircle, homeOutline, arrowForward,
-  chevronDownOutline, chevronUpOutline,
+  chevronDownOutline, chevronUpOutline, sparklesOutline,
 } from 'ionicons/icons';
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
@@ -41,6 +41,9 @@ export default function AgeResult() {
   const confidence = Math.round((1 - lastResult.uncertainty) * 100);
   const pUnder = Math.round(lastResult.p_under_18 * 100);
   const quality = Math.round(lastResult.face_quality * 100);
+  const ex = lastResult.explanation;
+  const byModel = ex?.source === 'model';
+  const why = ex?.summary ?? WHY[lastResult.reason_code] ?? 'A second check is needed before continuing.';
   const goHome = () => { reset(); history.replace('/welcome'); };
   const retake = () => { reset(); history.replace('/capture'); };
 
@@ -58,6 +61,14 @@ export default function AgeResult() {
         <div className="kamari-pad kamari-stack">
           <div className="kamari-card kamari-pad">
             <p style={{ margin: 0, fontSize: '1.05rem', lineHeight: 1.5 }}>{lastResult.message}</p>
+            {byModel && (
+              <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                <IonIcon icon={sparklesOutline} style={{ color: 'var(--kamari-gold)', fontSize: 15 }} />
+                <span className="kamari-muted" style={{ fontSize: '.78rem' }}>
+                  Explained by Kámárí Gemma{ex?.model_version ? ` (${ex.model_version})` : ''}
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="kamari-card kamari-pad">
@@ -82,10 +93,22 @@ export default function AgeResult() {
               <IonIcon icon={showWhy ? chevronUpOutline : chevronDownOutline} style={{ color: 'var(--kamari-indigo)' }} />
             </button>
             {showWhy && (
-              <p className="kamari-muted" style={{ margin: '10px 0 0', fontSize: '.92rem', lineHeight: 1.55 }}>
-                {WHY[lastResult.reason_code] ?? 'A second check is needed before continuing.'}
-                {' '}Decisions are conservative near the age limit and never auto-approve a borderline case.
-              </p>
+              <div style={{ margin: '10px 0 0' }}>
+                <p className="kamari-muted" style={{ margin: 0, fontSize: '.92rem', lineHeight: 1.55 }}>
+                  {why}
+                  {' '}Decisions are conservative near the age limit and never auto-approve a borderline case.
+                </p>
+                {ex?.safety_note && (
+                  <p className="kamari-muted" style={{ margin: '8px 0 0', fontSize: '.82rem', fontStyle: 'italic' }}>
+                    {ex.safety_note}
+                  </p>
+                )}
+                <p className="kamari-muted" style={{ margin: '8px 0 0', fontSize: '.78rem' }}>
+                  {byModel
+                    ? 'This explanation was written by the Kámárí Gemma model in your language.'
+                    : 'Standard explanation (the model layer was unavailable, so an approved template was used).'}
+                </p>
+              </div>
             )}
             <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <span className="kamari-badge">📷 {lastResult.retention.replaceAll('_', ' ')}</span>

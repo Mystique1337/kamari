@@ -21,6 +21,15 @@ export const REASON_CODES = [
 ] as const;
 export type ReasonCode = (typeof REASON_CODES)[number];
 
+export const Explanation = z.object({
+  source: z.enum(['model', 'template']),
+  model_version: z.string().nullish(),
+  summary: z.string().nullish(),
+  next_step: z.string().nullish(),
+  safety_note: z.string().nullish(),
+});
+export type Explanation = z.infer<typeof Explanation>;
+
 export const AgeEstimateResponse = z.object({
   request_id: z.string(),
   model_version: z.string(),
@@ -32,6 +41,7 @@ export const AgeEstimateResponse = z.object({
   decision: z.enum(DECISIONS),
   reason_code: z.enum(REASON_CODES),
   message: z.string(),
+  explanation: Explanation.optional(),
   retention: z.string(),
 });
 export type AgeEstimateResponse = z.infer<typeof AgeEstimateResponse>;

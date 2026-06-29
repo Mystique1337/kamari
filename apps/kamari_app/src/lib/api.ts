@@ -184,6 +184,10 @@ function mockEstimate(): Promise<AgeEstimateResponse> {
     decision,
     reason_code: reason,
     message,
+    explanation: {
+      source: 'template',
+      safety_note: 'This is an estimate, not a legal age determination.',
+    },
     retention: 'image_not_stored',
   };
   return new Promise((r) => setTimeout(() => r(body), 900));

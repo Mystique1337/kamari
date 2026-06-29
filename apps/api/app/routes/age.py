@@ -5,8 +5,10 @@ from fastapi import APIRouter, Depends, File, Form, UploadFile
 
 from ..clients.modal_client import cnn_estimate, gemma_explain
 from ..config import Settings, get_settings
-from ..policy import age_band, decide, default_message, sanitize_message
-from ..schemas.age import AgeEstimateResponse, ReasonCode
+from ..policy import (
+    age_band, decide, default_explanation, default_message, sanitize_message,
+)
+from ..schemas.age import AgeEstimateResponse, Explanation, ReasonCode
 from ..security.api_keys import require_key
 
 router = APIRouter(prefix="/v1/age", tags=["age"])
@@ -28,8 +30,14 @@ async def estimate(
         signals.p_under_18, signals.estimated_age, signals.uncertainty, signals.face_quality, s,
     )
 
-    # Gemma writes the human, multilingual message; fall back to approved templates.
+    # Gemma writes the human, multilingual message and its reasoning; fall back to
+    # approved templates (and a static explanation) when the model is unavailable.
     message = default_message(reason)
+    explanation = Explanation(
+        source="template",
+        summary=default_explanation(reason),
+        safety_note="This is an estimate, not a legal age determination.",
+    )
     gemma = await gemma_explain(
         signals.model_dump(),
         {"decision": decision.value, "reason_code": reason.value,
@@ -38,6 +46,13 @@ async def estimate(
     )
     if gemma and gemma.get("reason_code") == reason.value and gemma.get("user_message"):
         message = gemma["user_message"]
+        explanation = Explanation(
+            source="model",
+            model_version="gemma-explain-lora-v0",
+            summary=sanitize_message(gemma.get("admin_summary")) or default_explanation(reason),
+            next_step=gemma.get("next_step"),
+            safety_note=sanitize_message(gemma.get("safety_note")) or explanation.safety_note,
+        )
     message = sanitize_message(message)
 
     # NB: image_bytes is never persisted (retention default = no-store).
@@ -52,6 +67,7 @@ async def estimate(
         decision=decision,
         reason_code=ReasonCode(reason),
         message=message,
+        explanation=explanation,
         retention=s.retention_default,
     )
     # Audit log: metadata only, never the image. Best-effort (no-op without DATABASE_URL).

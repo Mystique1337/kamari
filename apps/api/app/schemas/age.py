@@ -30,6 +30,19 @@ class CnnSignals(BaseModel):
     model_version: str = "cnn_v0.1.0"
 
 
+class Explanation(BaseModel):
+    """Where the human message came from, plus the model's reasoning.
+
+    `source` is "model" when the Gemma explanation layer wrote the message, or
+    "template" when the gateway fell back to an approved per-reason template.
+    """
+    source: str = "template"            # "model" | "template"
+    model_version: str | None = None    # the Gemma adapter, when source == "model"
+    summary: str | None = None          # short reason the decision was made (the "why")
+    next_step: str | None = None        # machine hint for integrators (e.g. retake_photo)
+    safety_note: str | None = None      # standing disclaimer
+
+
 class AgeEstimateResponse(BaseModel):
     request_id: str
     model_version: str
@@ -41,6 +54,7 @@ class AgeEstimateResponse(BaseModel):
     decision: Decision
     reason_code: ReasonCode
     message: str
+    explanation: Explanation = Field(default_factory=Explanation)
     retention: str
 
 

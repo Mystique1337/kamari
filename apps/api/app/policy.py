@@ -46,3 +46,18 @@ def decide(p_under_18: float, estimated_age: float, uncertainty: float,
 
 def default_message(reason: ReasonCode) -> str:
     return _DEFAULT_MESSAGES.get(reason, "We need an additional age check before continuing.")
+
+
+_DEFAULT_EXPLANATIONS = {
+    ReasonCode.ALLOW: "Estimated age is comfortably above the limit, with good confidence and photo quality.",
+    ReasonCode.BLOCK_LIKELY_MINOR: "The model estimated a high chance of being under 18, so access needs a guardian to approve.",
+    ReasonCode.SECONDARY_CHECK_NEAR_THRESHOLD: "The estimate is close to the age limit (the 18 to 21 band), so we ask for one more quick check.",
+    ReasonCode.SECONDARY_CHECK_LOW_CONFIDENCE: "The model was not confident enough on this photo, so we ask for a second check.",
+    ReasonCode.RECAPTURE_LOW_QUALITY: "We could not read a clear face, so please retake the photo in good light.",
+    ReasonCode.RECAPTURE_NO_FACE: "We did not find a clear single face, so please retake the photo.",
+    ReasonCode.RECAPTURE_MULTIPLE_FACES: "We saw more than one face, so please retake with just you in frame.",
+}
+
+
+def default_explanation(reason: ReasonCode) -> str:
+    return _DEFAULT_EXPLANATIONS.get(reason, "A second check is needed before continuing.")
