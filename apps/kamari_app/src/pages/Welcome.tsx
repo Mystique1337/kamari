@@ -71,9 +71,9 @@ const ARTIFACTS = [
 ];
 
 const TEAM = [
-  { name: 'Emmanuel Ashinze', role: 'Engineering and API' },
-  { name: 'Taiwo Olatunji', role: 'Machine learning and data' },
-  { name: 'Kolade Boluwatife', role: 'Product and frontend' },
+  { name: 'Emmanuel Ashinze', role: 'Chief Executive Officer' },
+  { name: 'Samuel Olatunji', role: 'Chief Technology Officer' },
+  { name: 'Kolade Boluwatife', role: 'Chief Operating Officer' },
 ];
 
 function scrollTo(id: string) {
