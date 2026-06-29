@@ -1,5 +1,9 @@
 # Kámárí
 
+<p align="center">
+  <img src="docs/assets/hero.svg" alt="Kámárí - privacy-first age verification built for Africa" width="100%">
+</p>
+
 > Privacy-first, African-focused **age verification**. Prove age from a selfie, get a calibrated
 > decision and a clear, multilingual explanation. The photo is processed once and never stored.
 
@@ -44,6 +48,15 @@ flowchart LR
 ```
 
 The image is processed once and never stored; only decision metadata is logged.
+
+## Screenshots
+
+| | |
+|:---:|:---:|
+| ![Marketing homepage](docs/assets/screenshots/home.png) | ![Consent and language picker](docs/assets/screenshots/consent.png) |
+| Marketing homepage (web) | Consent + language picker (app) |
+| ![Pricing tiers](docs/assets/screenshots/pricing.png) | ![Developer docs](docs/assets/screenshots/docs.png) |
+| Pricing tiers | Developer docs with code samples |
 
 ## Decisions
 | Decision | Meaning |

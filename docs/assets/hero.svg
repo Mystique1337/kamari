@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" role="img" aria-label="Kamari - privacy-first age verification built for Africa">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#213A6B"/>
+      <stop offset="1" stop-color="#14213D"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="82%" cy="-10%" r="70%">
+      <stop offset="0" stop-color="#36518a" stop-opacity="0.8"/>
+      <stop offset="55%" stop-color="#36518a" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="adinkra" width="72" height="72" patternUnits="userSpaceOnUse">
+      <g fill="none" stroke="#E8B84B" stroke-width="1.4" opacity="0.16">
+        <path d="M36 6l30 30-30 30L6 36z"/>
+        <path d="M36 22l14 14-14 14-14-14z"/>
+        <circle cx="36" cy="36" r="3" fill="#E8B84B" stroke="none"/>
+        <path d="M0 36h12M60 36h12M36 0v12M36 60v12"/>
+      </g>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="420" fill="url(#bg)"/>
+  <rect width="1200" height="420" fill="url(#adinkra)"/>
+  <rect width="1200" height="420" fill="url(#glow)"/>
+
+  <!-- Brand glyph (Adinkra-inspired diamond with a clay centre) -->
+  <g transform="translate(150 210)" fill="none" stroke="#E8B84B" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M0 -96 96 0 0 96 -96 0 Z"/>
+    <path d="M0 -52 52 0 0 52 -52 0 Z"/>
+    <path d="M0 -120v22M0 120v-22M-120 0h22M120 0h-22"/>
+  </g>
+  <circle cx="150" cy="210" r="16" fill="#C65D3B"/>
+
+  <!-- Wordmark + tagline -->
+  <text x="320" y="170" font-family="Georgia, 'Times New Roman', serif" font-size="104" font-weight="700" fill="#F6EFE2">Kámárí</text>
+  <text x="324" y="222" font-family="-apple-system, Segoe UI, Roboto, sans-serif" font-size="27" fill="#E8B84B" letter-spacing="2">PRIVACY-FIRST AGE VERIFICATION, BUILT FOR AFRICA</text>
+  <text x="324" y="266" font-family="-apple-system, Segoe UI, Roboto, sans-serif" font-size="22" fill="rgba(246,239,226,0.86)">Prove age from a selfie. A calibrated decision, explained in your language.</text>
+  <text x="324" y="298" font-family="-apple-system, Segoe UI, Roboto, sans-serif" font-size="22" fill="rgba(246,239,226,0.86)">The photo is processed once and never stored.</text>
+
+  <!-- chips -->
+  <g font-family="-apple-system, Segoe UI, Roboto, sans-serif" font-size="18" font-weight="600">
+    <rect x="324" y="324" width="186" height="38" rx="19" fill="rgba(47,107,79,0.30)"/>
+    <text x="346" y="349" fill="#F6EFE2">Photo never stored</text>
+    <rect x="522" y="324" width="150" height="38" rx="19" fill="rgba(232,184,75,0.22)"/>
+    <text x="544" y="349" fill="#F6EFE2">9 languages</text>
+    <rect x="684" y="324" width="168" height="38" rx="19" fill="rgba(198,93,59,0.28)"/>
+    <text x="706" y="349" fill="#F6EFE2">Open source</text>
+  </g>
+
+  <!-- kente accent rule -->
+  <g>
+    <rect x="0" y="404" width="1200" height="16" fill="#E8B84B"/>
+    <rect x="0" y="404" width="1200" height="16" fill="url(#kente)"/>
+  </g>
+  <pattern id="kente" width="84" height="16" patternUnits="userSpaceOnUse">
+    <rect x="0" y="0" width="21" height="16" fill="#E8B84B"/>
+    <rect x="21" y="0" width="21" height="16" fill="#C65D3B"/>
+    <rect x="42" y="0" width="21" height="16" fill="#2F6B4F"/>
+    <rect x="63" y="0" width="21" height="16" fill="#213A6B"/>
+  </pattern>
+</svg>
