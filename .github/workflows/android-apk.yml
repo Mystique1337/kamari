@@ -5,10 +5,7 @@ name: Build Android APK
 on:
   workflow_dispatch:
   push:
-    branches: [main]
-    paths:
-      - 'apps/kamari_app/**'
-      - '.github/workflows/android-apk.yml'
+    branches: [main]   # rebuild the downloadable APK on every commit to main
 
 jobs:
   build-apk:
