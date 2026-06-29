@@ -10,7 +10,8 @@ const Consent = lazy(() => import('./pages/Consent'));
 const CameraCapture = lazy(() => import('./pages/CameraCapture'));
 const AgeResult = lazy(() => import('./pages/AgeResult'));
 const SecondaryCheck = lazy(() => import('./pages/SecondaryCheck'));
-const GuardianConsent = lazy(() => import('./pages/GuardianConsent'));
+const Demos = lazy(() => import('./pages/Demos'));
+const Demo = lazy(() => import('./pages/Demo'));
 const Login = lazy(() => import('./pages/Login'));
 const Pricing = lazy(() => import('./pages/Pricing'));
 const Docs = lazy(() => import('./pages/Docs'));
@@ -39,7 +40,8 @@ export default function App() {
             <Route exact path="/capture" component={CameraCapture} />
             <Route exact path="/result" component={AgeResult} />
             <Route exact path="/secondary" component={SecondaryCheck} />
-            <Route exact path="/guardian" component={GuardianConsent} />
+            <Route exact path="/demos" component={Demos} />
+            <Route exact path="/demo/:kind" component={Demo} />
             <Route exact path="/login" component={Login} />
             <Route exact path="/pricing" component={Pricing} />
             <Route exact path="/docs" component={Docs} />

@@ -35,7 +35,7 @@ export default function Terms() {
           our liability is limited to the amount you paid in the prior month.</p>
 
           <h3>Contact</h3>
-          <p>Questions: chidi.ashinze@gmail.com.</p>
+          <p>Questions: kamari.support@gmail.com.</p>
         </div>
       </IonContent>
     </IonPage>

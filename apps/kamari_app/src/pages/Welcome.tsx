@@ -1,12 +1,13 @@
 import { IonContent, IonPage, IonButton, IonIcon } from '@ionic/react';
 import {
   arrowForward, eyeOffOutline, globeOutline, flashOutline, shieldCheckmarkOutline,
-  sparklesOutline, logoGithub, copyOutline, checkmarkOutline,
+  sparklesOutline, logoGithub, copyOutline, checkmarkOutline, logoAndroid,
 } from 'ionicons/icons';
 import { useState, type CSSProperties } from 'react';
 import { useHistory } from 'react-router-dom';
 import KamariMark from '../components/KamariMark';
 import { apiBase } from '../lib/api';
+import { DEMO_LIST } from '../lib/demos';
 
 const BASE = apiBase || 'https://kamari-api.shinzii.tech';
 
@@ -59,6 +60,22 @@ const PLANS = [
   { name: 'Scale', price: '$199', items: ['500,000 checks / mo', '300 req / min', 'Fairness reports'] },
 ];
 
+const HF = 'https://huggingface.co/Shinzmann';
+// Always-latest Android build, published by CI on every push to main.
+const APK_URL = 'https://github.com/Mystique1337/kamari/releases/latest/download/kamari.apk';
+const ARTIFACTS = [
+  { tag: 'Model', title: 'CNN age model', desc: 'EfficientNetV2-S. MAE 6.03, with the MPTR safety metric.', href: `${HF}/cnn-age-v0` },
+  { tag: 'Model', title: 'Gemma explanation LoRA', desc: 'Strict-JSON, multilingual decision messages.', href: `${HF}/gemma-explain-lora-v0` },
+  { tag: 'Benchmark', title: 'Kámárí-Safe Open v0', desc: 'Fairness slices and the 13 to 21 boundary.', href: `${HF}/kamari-safe-open-v0` },
+  { tag: 'Dataset', title: 'Dataset registry', desc: 'Provenance, licences, and the data manifest.', href: `${HF}/dataset-registry-v0` },
+];
+
+const TEAM = [
+  { name: 'Emmanuel Ashinze', role: 'Engineering and API' },
+  { name: 'Taiwo Olatunji', role: 'Machine learning and data' },
+  { name: 'Kolade Boluwatife', role: 'Product and frontend' },
+];
+
 function scrollTo(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -76,6 +93,7 @@ export default function Welcome() {
         <nav className="mkt-nav">
           <span className="brand">Kámárí</span>
           <button className="link hide-sm" onClick={() => scrollTo('how')}>How it works</button>
+          <button className="link hide-sm" onClick={() => history.push('/demos')}>Demos</button>
           <button className="link hide-sm" onClick={() => scrollTo('data')}>Benchmarks</button>
           <button className="link hide-sm" onClick={() => history.push('/docs')}>Docs</button>
           <button className="link hide-sm" onClick={() => history.push('/pricing')}>Pricing</button>
@@ -106,6 +124,14 @@ export default function Welcome() {
               >
                 Read the docs
               </IonButton>
+              <IonButton
+                fill="outline"
+                href={APK_URL}
+                rel="noreferrer"
+                style={{ '--color': 'var(--kamari-cream)', '--border-color': 'rgba(246,239,226,.55)' } as CSSProperties}
+              >
+                <IonIcon slot="start" icon={logoAndroid} /> Get the Android app
+              </IonButton>
             </div>
             <div className="mkt-herostats">
               {STATS.map((s) => (
@@ -133,6 +159,34 @@ export default function Welcome() {
                   <h3 style={{ margin: '10px 0 4px' }}>{t}</h3>
                   <p className="kamari-muted" style={{ margin: 0, fontSize: '.92rem' }}>{d}</p>
                 </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* See it in action: demo integrations */}
+        <section id="demos" className="mkt-section">
+          <div className="mkt-wrap">
+            <h2 className="mkt-h2">See it in action</h2>
+            <p className="mkt-lead">
+              Three mock partner apps that call the Kamari API and allow or restrict entry on the
+              decision. Try one with a selfie or an uploaded photo.
+            </p>
+            <div className="mkt-grid-3" style={{ marginTop: 22 }}>
+              {DEMO_LIST.map((d) => (
+                <button key={d.kind} onClick={() => history.push(`/demo/${d.kind}`)}
+                  className="kamari-card kamari-pad" style={{ textAlign: 'left', cursor: 'pointer', border: 'none', width: '100%' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span style={{ width: 40, height: 40, borderRadius: 10, background: d.accent, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                      <IonIcon icon={d.icon} style={{ color: '#fff', fontSize: 22 }} />
+                    </span>
+                    <div>
+                      <strong>{d.name}</strong>
+                      <p className="kamari-muted" style={{ margin: 0, fontSize: '.85rem' }}>{d.tagline}</p>
+                    </div>
+                  </div>
+                  <span style={{ color: 'var(--kamari-indigo)', fontWeight: 600, fontSize: '.85rem', display: 'inline-block', marginTop: 12 }}>Open demo</span>
+                </button>
               ))}
             </div>
           </div>
@@ -223,6 +277,39 @@ export default function Welcome() {
           </div>
         </section>
 
+        {/* Built in the open: deliverables + artifacts */}
+        <section id="artifacts" className="mkt-section">
+          <div className="mkt-wrap">
+            <h2 className="mkt-h2">Built in the open</h2>
+            <p className="mkt-lead">
+              Four deliverables: a dataset and benchmark, a CNN age model, a Gemma explanation model,
+              and the API and apps. The code is Apache-2.0 on GitHub; the models, benchmark, and data
+              registry live on Hugging Face.
+            </p>
+            <div className="mkt-grid" style={{ marginTop: 22 }}>
+              {ARTIFACTS.map((a) => (
+                <a key={a.title} href={a.href} target="_blank" rel="noreferrer"
+                  className="kamari-card kamari-pad" style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+                  <span className="kamari-badge" style={{ background: 'rgba(33,58,107,.1)', color: 'var(--kamari-indigo)' }}>{a.tag}</span>
+                  <h3 style={{ margin: '10px 0 4px' }}>{a.title}</h3>
+                  <p className="kamari-muted" style={{ margin: 0, fontSize: '.9rem' }}>{a.desc}</p>
+                  <span style={{ color: 'var(--kamari-indigo)', fontWeight: 600, fontSize: '.85rem', display: 'inline-block', marginTop: 10 }}>
+                    View on Hugging Face
+                  </span>
+                </a>
+              ))}
+            </div>
+            <div style={{ marginTop: 18, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <IonButton fill="outline" href="https://github.com/Mystique1337/kamari" target="_blank" rel="noreferrer">
+                <IonIcon slot="start" icon={logoGithub} /> Code on GitHub
+              </IonButton>
+              <IonButton fill="clear" href="https://github.com/Mystique1337/kamari/blob/main/docs/methodology.md" target="_blank" rel="noreferrer">
+                Read the methodology
+              </IonButton>
+            </div>
+          </div>
+        </section>
+
         {/* Pricing teaser */}
         <section className="mkt-section">
           <div className="mkt-wrap">
@@ -260,19 +347,14 @@ export default function Welcome() {
               or measured here.
             </p>
             <div className="mkt-grid-3" style={{ marginTop: 22 }}>
-              <div className="kamari-card kamari-pad">
-                <strong>Chidi Ashinze</strong>
-                <p className="kamari-muted" style={{ margin: '4px 0 0', fontSize: '.9rem' }}>Founder. Builds the models, API, and app.</p>
-              </div>
-              <div className="kamari-card kamari-pad">
-                <strong>Open to collaborators</strong>
-                <p className="kamari-muted" style={{ margin: '4px 0 0', fontSize: '.9rem' }}>ML, data, and African-language reviewers. Reach out.</p>
-              </div>
-              <div className="kamari-card kamari-pad">
-                <strong>Contact</strong>
-                <p className="kamari-muted" style={{ margin: '4px 0 0', fontSize: '.9rem' }}>chidi.ashinze@gmail.com</p>
-              </div>
+              {TEAM.map((m) => (
+                <div key={m.name} className="kamari-card kamari-pad">
+                  <strong>{m.name}</strong>
+                  <p className="kamari-muted" style={{ margin: '4px 0 0', fontSize: '.9rem' }}>{m.role}</p>
+                </div>
+              ))}
             </div>
+            <p className="mkt-lead" style={{ marginTop: 16 }}>Contact: kamari.support@gmail.com</p>
           </div>
         </section>
 
@@ -282,6 +364,8 @@ export default function Welcome() {
             <span className="brand" style={{ fontFamily: 'var(--kamari-font-display)', fontWeight: 700 }}>Kámárí</span>
             <span className="spacer" style={{ flex: 1 }} />
             <a href="https://github.com/Mystique1337/kamari" target="_blank" rel="noreferrer"><IonIcon icon={logoGithub} /> GitHub</a>
+            <a href={HF} target="_blank" rel="noreferrer">Hugging Face</a>
+            <a href={APK_URL} rel="noreferrer"><IonIcon icon={logoAndroid} /> Android app</a>
             <button className="link" onClick={() => history.push('/docs')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}>Docs</button>
             <button className="link" onClick={() => history.push('/pricing')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}>Pricing</button>
             <button className="link" onClick={() => history.push('/privacy')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}>Privacy</button>

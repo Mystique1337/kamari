@@ -162,13 +162,10 @@ export default function SecondaryCheck() {
             <div className="kamari-center" style={{ marginTop: 40 }}>
               <h1 style={{ color: 'var(--kamari-cream)' }}>We could not confirm</h1>
               <p style={{ color: 'rgba(246,239,226,.85)', maxWidth: 300, margin: '8px auto 0' }}>
-                The liveness check did not pass. You can try again, or ask a guardian to help.
+                The liveness check did not pass. Please try again.
               </p>
               <IonButton className="kamari-btn" color="secondary" style={{ marginTop: 18 }} onClick={() => { setStep(0); setPassed(null); }}>
                 <IonIcon slot="start" icon={refreshOutline} /> Try again
-              </IonButton>
-              <IonButton fill="clear" style={{ color: 'var(--kamari-cream)' }} onClick={() => history.push('/guardian')}>
-                Ask a guardian
               </IonButton>
             </div>
           )}

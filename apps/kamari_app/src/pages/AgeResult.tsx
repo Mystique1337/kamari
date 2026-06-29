@@ -99,12 +99,6 @@ export default function AgeResult() {
               <IonIcon slot="end" icon={arrowForward} />
             </IonButton>
           )}
-          {lastResult.decision === 'block' && (
-            <IonButton expand="block" className="kamari-btn" color="secondary" onClick={() => history.push('/guardian')}>
-              Ask a guardian to approve
-              <IonIcon slot="end" icon={arrowForward} />
-            </IonButton>
-          )}
           {lastResult.decision === 'recapture' && (
             <IonButton expand="block" className="kamari-btn" color="secondary" onClick={retake}>
               Retake photo
