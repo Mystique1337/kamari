@@ -379,6 +379,7 @@ export default function Welcome() {
             <span className="spacer" style={{ flex: 1 }} />
             <a href="https://github.com/Mystique1337/kamari" target="_blank" rel="noreferrer"><IonIcon icon={logoGithub} /> GitHub</a>
             <a href={HF} target="_blank" rel="noreferrer">Hugging Face</a>
+            <a href="https://github.com/Mystique1337/kamari/blob/main/docs/SELF_HOSTING.md" target="_blank" rel="noreferrer">Self-host</a>
             <a href={APK_URL} rel="noreferrer"><IonIcon icon={logoAndroid} /> Android app</a>
             <button className="link" onClick={() => history.push('/docs')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}>Docs</button>
             <button className="link" onClick={() => history.push('/pricing')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}>Pricing</button>

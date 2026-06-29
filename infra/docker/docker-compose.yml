@@ -1,0 +1,56 @@
+# Kamari self-host stack. Runs the whole age gate on your own infrastructure with no GPU:
+#   web (PWA)  ->  api (gateway)  ->  cnn (CPU age model from Hugging Face)
+# Gemma, Supabase, and n8n are optional (see .env.example). Without Gemma the gateway returns
+# approved template messages; without Supabase there is no developer portal, but age checks work.
+#
+#   cp .env.example .env   # optional, only if you want Supabase/Gemma/n8n/email
+#   docker compose up --build
+# Then open http://localhost:8080
+
+services:
+  cnn:
+    build:
+      context: ../../services/selfhost_cnn
+    environment:
+      HF_TOKEN: ${HF_TOKEN:-}            # optional; cnn-age-v0 is public
+    expose:
+      - "8001"
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ../../apps/api
+    environment:
+      MODAL_AGE_ENDPOINT: http://cnn:8001/estimate
+      MODAL_GEMMA_ENDPOINT: ${MODAL_GEMMA_ENDPOINT:-}     # empty = template messages, no GPU needed
+      SUPABASE_URL: ${SUPABASE_URL:-}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
+      SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:-}
+      SUPABASE_JWT_SECRET: ${SUPABASE_JWT_SECRET:-}
+      SUPABASE_DB_SCHEMA: public
+      API_KEY_PEPPER: ${API_KEY_PEPPER:-change-me}
+      REQUIRE_API_KEY: ${REQUIRE_API_KEY:-false}
+      N8N_EMAIL_WEBHOOK_URL: ${N8N_EMAIL_WEBHOOK_URL:-}
+      N8N_EMAIL_HEADER_NAME: ${N8N_EMAIL_HEADER_NAME:-EMAIL_SECRET}
+      N8N_EMAIL_HEADER_SECRET: ${N8N_EMAIL_HEADER_SECRET:-}
+      APP_PUBLIC_URL: ${APP_PUBLIC_URL:-http://localhost:8080}
+      RETENTION_DEFAULT: image_not_stored
+    ports:
+      - "8000:8000"
+    depends_on:
+      - cnn
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ../../apps/kamari_app
+      args:
+        VITE_KAMARI_API_URL: ${VITE_KAMARI_API_URL:-http://localhost:8000}
+        VITE_USE_MOCK: "0"
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:-}
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    restart: unless-stopped

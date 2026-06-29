@@ -3,8 +3,15 @@ import { IonReactRouter } from '@ionic/react-router';
 import { Route, Redirect } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
 
-// Welcome (the landing) loads eagerly for a fast first paint; the rest are code-split.
+// Welcome (the marketing landing) loads eagerly for a fast first paint; the rest are code-split.
 import Welcome from './pages/Welcome';
+import AppHome from './pages/AppHome';
+import { isNative } from './lib/camera';
+
+// The installed app opens to a plain entry; the web build shows the marketing homepage.
+function Home() {
+  return isNative() ? <AppHome /> : <Welcome />;
+}
 
 const Consent = lazy(() => import('./pages/Consent'));
 const CameraCapture = lazy(() => import('./pages/CameraCapture'));
@@ -35,7 +42,7 @@ export default function App() {
       <IonReactRouter>
         <Suspense fallback={<Loading />}>
           <IonRouterOutlet>
-            <Route exact path="/welcome" component={Welcome} />
+            <Route exact path="/welcome" component={Home} />
             <Route exact path="/consent" component={Consent} />
             <Route exact path="/capture" component={CameraCapture} />
             <Route exact path="/result" component={AgeResult} />
