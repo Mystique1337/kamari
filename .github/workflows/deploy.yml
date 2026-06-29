@@ -18,7 +18,7 @@ jobs:
       RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
       PROJECT_ID: ec7f5aab-6b69-4907-8104-b91764134e2b
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Gate on token
         id: gate
