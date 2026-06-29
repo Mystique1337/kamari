@@ -6,8 +6,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends libgl1 libglib2
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
-# CPU-only torch keeps the image small.
-RUN pip install torch --index-url https://download.pytorch.org/whl/cpu
+# CPU-only torch + torchvision from the same index (matched ABI; timm needs torchvision,
+# and a mismatched torchvision breaks the torchvision::nms operator at import).
+RUN pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 COPY cnn_server.py .
