@@ -3,7 +3,7 @@ import {
   arrowForward, eyeOffOutline, globeOutline, flashOutline, shieldCheckmarkOutline,
   sparklesOutline, logoGithub, copyOutline, checkmarkOutline,
 } from 'ionicons/icons';
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { useHistory } from 'react-router-dom';
 import KamariMark from '../components/KamariMark';
 import { apiBase } from '../lib/api';
@@ -85,33 +85,38 @@ export default function Welcome() {
           <IonButton size="small" className="kamari-btn" color="secondary" onClick={() => history.push('/consent')}>Try it out</IonButton>
         </nav>
 
-        {/* Hero */}
-        <section className="mkt-wrap mkt-hero">
-          <div style={{ display: 'flex', justifyContent: 'center' }}><KamariMark size={76} tone="indigo" /></div>
-          <p className="kamari-eyebrow" style={{ color: 'var(--kamari-terracotta)' }}>African-built age verification</p>
-          <h1>Prove age with a selfie.<br />Privacy kept, not your photo.</h1>
-          <p className="sub">
-            Kámárí estimates age from a single selfie, returns a calibrated decision, and explains it
-            in the user's language. Tuned for African faces. Open source, with a managed API.
-          </p>
-          <div className="mkt-cta">
-            <IonButton className="kamari-btn" color="secondary" onClick={() => history.push('/consent')}>
-              Try it out <IonIcon slot="end" icon={arrowForward} />
-            </IonButton>
-            <IonButton fill="outline" color="primary" onClick={() => history.push('/docs')}>Read the docs</IonButton>
+        {/* Hero (signature Adire indigo + Adinkra pattern) */}
+        <section className="kamari-hero kamari-pattern">
+          <div className="mkt-wrap mkt-hero-indigo" style={{ textAlign: 'center' }}>
+            <div style={{ display: 'flex', justifyContent: 'center' }}><KamariMark size={84} tone="gold" /></div>
+            <p className="kamari-eyebrow">African-built age verification</p>
+            <h1>Prove age with a selfie.<br />Privacy kept, not your photo.</h1>
+            <p className="sub">
+              Kámárí estimates age from a single selfie, returns a calibrated decision, and explains
+              it in the user's language. Tuned for African faces. Open source, with a managed API.
+            </p>
+            <div className="mkt-cta">
+              <IonButton className="kamari-btn" color="secondary" onClick={() => history.push('/consent')}>
+                Try it out <IonIcon slot="end" icon={arrowForward} />
+              </IonButton>
+              <IonButton
+                fill="outline"
+                onClick={() => history.push('/docs')}
+                style={{ '--color': 'var(--kamari-cream)', '--border-color': 'rgba(246,239,226,.55)' } as CSSProperties}
+              >
+                Read the docs
+              </IonButton>
+            </div>
+            <div className="mkt-herostats">
+              {STATS.map((s) => (
+                <div key={s.lbl} className="mkt-herostat">
+                  <div className="n">{s.num}</div>
+                  <div className="l">{s.lbl}</div>
+                </div>
+              ))}
+            </div>
           </div>
-        </section>
-
-        {/* Stats */}
-        <section className="mkt-wrap">
-          <div className="mkt-grid">
-            {STATS.map((s) => (
-              <div key={s.lbl} className="kamari-card mkt-stat">
-                <div className="num">{s.num}</div>
-                <div className="lbl">{s.lbl}</div>
-              </div>
-            ))}
-          </div>
+          <div className="mkt-wrap" style={{ paddingBottom: 26 }}><div className="kamari-kente" /></div>
         </section>
 
         {/* How it works */}

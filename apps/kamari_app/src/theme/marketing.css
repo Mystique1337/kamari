@@ -3,23 +3,32 @@
 .mkt { --maxw: 1060px; }
 .mkt-wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 20px; }
 
-/* Sticky top nav */
+/* Sticky top nav (indigo, part of the signature blue band at the top) */
 .mkt-nav {
   position: sticky; top: 0; z-index: 20;
   display: flex; align-items: center; gap: 18px;
   padding: 12px 20px;
-  background: color-mix(in srgb, var(--ion-background-color) 86%, transparent);
-  backdrop-filter: saturate(140%) blur(10px);
-  border-bottom: 1px solid var(--kamari-card-border);
+  background: var(--kamari-indigo-deep);
+  border-bottom: 1px solid rgba(232, 184, 75, 0.18);
 }
-.mkt-nav .brand { font-family: var(--kamari-font-display); font-weight: 700; font-size: 1.2rem; }
+.mkt-nav .brand { font-family: var(--kamari-font-display); font-weight: 700; font-size: 1.2rem; color: var(--kamari-cream); }
 .mkt-nav .spacer { flex: 1; }
 .mkt-nav a, .mkt-nav button.link {
-  all: unset; cursor: pointer; font-size: .9rem; color: var(--kamari-ink-soft);
+  all: unset; cursor: pointer; font-size: .9rem; color: rgba(246, 239, 226, 0.82);
 }
-.mkt-nav a:hover, .mkt-nav button.link:hover { color: var(--ion-text-color); }
+.mkt-nav a:hover, .mkt-nav button.link:hover { color: var(--kamari-cream); }
+.mkt-nav a:focus-visible, .mkt-nav button.link:focus-visible { outline: 2px solid var(--kamari-gold); outline-offset: 3px; border-radius: 4px; }
 .mkt-nav .hide-sm { display: none; }
 @media (min-width: 760px) { .mkt-nav .hide-sm { display: inline; } }
+
+/* Indigo hero + the stats that sit on it */
+.mkt-hero-indigo { padding: 56px 20px 8px; }
+.mkt-hero-indigo h1 { font-size: clamp(2.4rem, 6vw, 4rem); line-height: 1.05; color: var(--kamari-cream); margin: 14px 0 0; }
+.mkt-hero-indigo .sub { color: rgba(246, 239, 226, 0.86); max-width: 580px; margin: 16px auto 0; font-size: 1.12rem; line-height: 1.6; }
+.mkt-herostats { display: flex; gap: 30px; justify-content: center; flex-wrap: wrap; margin: 30px 0 6px; }
+.mkt-herostat { text-align: center; }
+.mkt-herostat .n { font-family: var(--kamari-font-display); font-size: clamp(1.4rem, 3.4vw, 2.1rem); color: var(--kamari-gold); }
+.mkt-herostat .l { color: rgba(246, 239, 226, 0.78); font-size: .8rem; margin-top: 2px; }
 
 /* Sections */
 .mkt-section { padding: 56px 0; }
