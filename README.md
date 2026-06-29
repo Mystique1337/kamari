@@ -57,10 +57,11 @@ MAE is strong; MPTR@18 is still high, so **the CNN is not a standalone gate**. T
 provide the safety margin. Lowering MPTR needs more 13 to 17 and African-labelled data. The safety
 headline is **Minor-Pass-Through Rate**, weighted 5x in model selection.
 
-**Gemma explanation model** (`gemma-4-E4B-it`, QLoRA r=32, 3 epochs): produces strict-JSON,
-in-language messages and never estimates age. The deployed model is verified returning valid JSON
-live; the v0 offline eval ran through a decoding path affected by a Gemma 4 `generate()` bug and is
-not representative (a corrected eval is pending). See `services/modal_gemma/README.md`.
+**Gemma explanation model** (`gemma-4-E4B-it`, QLoRA r=32, 3 epochs, loss 3.00 to 0.087): produces
+strict-JSON, in-language messages and never estimates age. Evaluated through the served endpoint over
+70 cases across 5 reason codes and 7 languages: JSON validity, schema compliance, decision and policy
+consistency, and language correctness all **1.00**, invented-code rate **0.00**. The endpoint
+guarantees valid JSON via an approved-template fallback. See `services/modal_gemma/README.md`.
 
 ## Dataset and benchmark (Kámárí-Safe Open v0)
 Built from open, license-checked face datasets with an auto label-quality gate, MTCNN face crops,

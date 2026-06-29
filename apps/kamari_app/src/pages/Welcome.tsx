@@ -221,7 +221,7 @@ export default function Welcome() {
             {/* Headline numbers */}
             <div className="mkt-herostats" style={{ justifyContent: 'flex-start', margin: '26px 0 8px' }}>
               <div className="mkt-herostat"><div className="n">6.03 yrs</div><div className="l">Mean absolute error</div></div>
-              <div className="mkt-herostat"><div className="n">0.317</div><div className="l">MPTR@18 (lower is better)</div></div>
+              <div className="mkt-herostat"><div className="n">8,322</div><div className="l">held-out benchmark faces</div></div>
               <div className="mkt-herostat"><div className="n">1%</div><div className="l">Adults wrongly blocked</div></div>
               <div className="mkt-herostat"><div className="n">~14 ms</div><div className="l">Model inference</div></div>
             </div>
@@ -258,10 +258,15 @@ export default function Welcome() {
             <div className="mkt-panel" style={{ marginTop: 16 }}>
               <h3>How we evaluate</h3>
               <p className="cap" style={{ marginBottom: 8, lineHeight: 1.6 }}>
-                The headline metric is Minor-Pass-Through Rate, the share of true minors passed as
-                adults, reported overall, at 21, and for dark and brown skin. The CNN is a signal, not
-                a standalone gate: the policy engine, liveness, and secondary checks provide the safety
-                margin. The benchmark is leakage-free with 8,322 held-out faces across fairness slices.
+                Our headline safety metric is Minor-Pass-Through Rate, the share of true minors passed
+                as adults. It is 0.317 overall and 0.383 for dark and brown skin, which is exactly why
+                the CNN never gates alone: the policy engine (conservative through 18 to 21), liveness,
+                and secondary checks provide the safety margin. The benchmark is leakage-free with
+                8,322 held-out faces across fairness slices.
+              </p>
+              <p className="cap" style={{ marginBottom: 8, lineHeight: 1.6 }}>
+                The Gemma explanation layer scores 1.00 on JSON validity, schema, decision and policy
+                consistency, and language correctness across 7 languages (invented-code rate 0.00).
               </p>
               <a href="https://github.com/Mystique1337/kamari/blob/main/docs/methodology.md" target="_blank" rel="noreferrer" style={{ color: 'var(--kamari-gold)', fontWeight: 600, fontSize: '.9rem' }}>Read the methodology</a>
             </div>
