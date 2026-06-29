@@ -1,5 +1,9 @@
 # Kámárí Gemma explanation layer (Modal)
 
+![Gemma](https://img.shields.io/badge/base-Gemma_4_E4B-4285F4?logo=google&logoColor=white) ![QLoRA](https://img.shields.io/badge/PEFT-QLoRA-EE4C2C) ![Modal](https://img.shields.io/badge/serve-Modal-7C3AED) [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](../../LICENSE)
+
+*Part of the [Kámárí](../../README.md) monorepo.*
+
 Turns CNN + policy signals into safe, multilingual, **strict-JSON** explanations. Gemma explains a
 decision; it never estimates age and never invents a reason code.
 

@@ -1,10 +1,26 @@
 # Kámárí
 
+> Privacy-first, African-focused **age verification**. Prove age from a selfie, get a calibrated
+> decision and a clear, multilingual explanation. The photo is processed once and never stored.
+
+[![CI](https://github.com/Mystique1337/kamari/actions/workflows/ci.yml/badge.svg)](https://github.com/Mystique1337/kamari/actions/workflows/ci.yml)
+[![Android APK](https://github.com/Mystique1337/kamari/actions/workflows/android-apk.yml/badge.svg)](https://github.com/Mystique1337/kamari/actions/workflows/android-apk.yml)
+[![Self-host Docker](https://github.com/Mystique1337/kamari/actions/workflows/selfhost-docker.yml/badge.svg)](https://github.com/Mystique1337/kamari/actions/workflows/selfhost-docker.yml)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![Live](https://img.shields.io/badge/live-kamari.shinzii.tech-2F6B4F)](https://kamari.shinzii.tech)
+[![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20models-Shinzmann-ffcc4d)](https://huggingface.co/Shinzmann)
+
 African-focused, privacy-first **age verification**. A user takes a selfie, Kámárí returns a
 calibrated age decision and a clear, multilingual message. The photo is processed once and never
 stored. Open source under **Apache-2.0**, with a managed API you can pay for by usage.
 
 **Live:** web app at **https://kamari.shinzii.tech**, API at **https://kamari-api.shinzii.tech**.
+**Download:** [Android APK](https://github.com/Mystique1337/kamari/releases/latest/download/kamari.apk).
+
+## Contents
+- [How it works](#how-it-works) · [Decisions](#decisions) · [Repository layout](#repository-layout)
+- [Results](#results-v0) · [Dataset and benchmark](#dataset-and-benchmark-kámárí-safe-open-v0) · [Artifacts](#trained-artifacts-hugging-face)
+- [Platform features](#platform-features) · [Self-host](#setup-and-deploy) · [Privacy](#privacy-posture)
 
 ## How it works
 A small calibrated **CNN** makes the age-gate signal (estimated age, probability under-18,

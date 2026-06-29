@@ -1,5 +1,9 @@
 # Kámárí API Gateway
 
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white) ![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white) ![Railway](https://img.shields.io/badge/deploy-Railway-0B0D0E?logo=railway&logoColor=white) [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](../../LICENSE)
+
+*Part of the [Kámárí](../../README.md) monorepo.*
+
 FastAPI orchestration gateway. Validates requests, runs the **policy/decision engine**,
 calls the Modal CNN + Gemma endpoints, and returns the app contract. No heavy ML here;
 no raw images stored. Deployed on Railway at **https://kamari-api.shinzii.tech**.

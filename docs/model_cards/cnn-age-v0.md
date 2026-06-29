@@ -59,3 +59,8 @@ Serving loads `best.pt` on CPU with OpenCV face detection and crop (matching the
 
 ## License
 Apache-2.0. This is an estimate, not a legal age determination.
+
+## Links
+- Code (Apache-2.0): https://github.com/Mystique1337/kamari
+- Live demo: https://kamari.shinzii.tech
+- Methodology: https://github.com/Mystique1337/kamari/blob/main/docs/methodology.md

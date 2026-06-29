@@ -62,3 +62,8 @@ Methodology: https://github.com/Mystique1337/kamari/blob/main/docs/methodology.m
 
 ## License
 Apache-2.0. Every output carries: this is an estimate, not a legal age determination.
+
+## Links
+- Code (Apache-2.0): https://github.com/Mystique1337/kamari
+- Live demo: https://kamari.shinzii.tech
+- Methodology: https://github.com/Mystique1337/kamari/blob/main/docs/methodology.md

@@ -1,5 +1,9 @@
 # Kámárí Data Notebook (run on Google Colab)
 
+![Colab](https://img.shields.io/badge/run-Google_Colab-F9AB00?logo=googlecolab&logoColor=white) ![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97-datasets-ffcc4d) [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](../LICENSE)
+
+*Part of the [Kámárí](../README.md) monorepo.*
+
 Use **`kamari_data_pipeline_v4_new_fast.ipynb`** on Google Colab. One notebook gathers,
 cleans, preprocesses, runs EDA, and publishes the datasets to Hugging Face so the Modal
 training scripts can pull them. Full methodology: [`../docs/methodology.md`](../docs/methodology.md).

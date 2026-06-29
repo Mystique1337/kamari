@@ -39,3 +39,8 @@ MAE 6.03; MPTR@18 0.317 (dark + brown 0.383); MPTR@21 0.27; adult-block 0.01.
 Per-source licenses apply (see `registry/licenses.md`); this repo redistributes manifests, not
 pixels. Minor faces are never published. For research and safety evaluation. Not for 1:N face search
 or legal age determination.
+
+## Links
+- Code (Apache-2.0): https://github.com/Mystique1337/kamari
+- Live demo: https://kamari.shinzii.tech
+- Methodology: https://github.com/Mystique1337/kamari/blob/main/docs/methodology.md

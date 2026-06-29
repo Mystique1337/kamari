@@ -1,5 +1,9 @@
 # Kámárí CNN age model (Modal)
 
+![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?logo=pytorch&logoColor=white) ![Modal](https://img.shields.io/badge/serve-Modal-7C3AED) ![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97-cnn--age--v0-ffcc4d) [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](../../LICENSE)
+
+*Part of the [Kámárí](../../README.md) monorepo.*
+
 Trains the age-gating CNN on Modal (H200) from the Hugging Face dataset, and serves it on CPU with
 face detection and crop. Returns raw signals only; the policy/decision engine lives in the gateway.
 

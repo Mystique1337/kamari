@@ -1,5 +1,9 @@
 # Kámárí - database (Supabase)
 
+![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?logo=supabase&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white) [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](../../LICENSE)
+
+*Part of the [Kámárí](../../README.md) monorepo.*
+
 Kámárí uses a self-hosted **Supabase** project. Auth is **GoTrue** (the gateway verifies
 Supabase-issued JWTs), and data goes through **Supabase REST (PostgREST)**. The gateway runs against
 the **public** schema, which PostgREST exposes by default, so no schema reconfiguration is needed.

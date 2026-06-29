@@ -1,5 +1,9 @@
 # Kámárí App
 
+![Ionic React](https://img.shields.io/badge/Ionic-React-3880FF?logo=ionic&logoColor=white) ![Capacitor](https://img.shields.io/badge/Capacitor-119EFF?logo=capacitor&logoColor=white) ![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white) ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white) [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](../../LICENSE)
+
+*Part of the [Kámárí](../../README.md) monorepo.*
+
 Web-first, mobile-style age-verification client. One Ionic React + TypeScript codebase ships
 to web, PWA, and Android (iOS too, via Capacitor). Themed as an African product: **Adire indigo**
 base with terracotta / gold / palm-green accents and Adinkra-inspired motifs. No em dashes in copy.
