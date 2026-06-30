@@ -45,7 +45,10 @@ export default function AgeResult() {
   const byModel = ex?.source === 'model';
   const why = ex?.summary ?? WHY[lastResult.reason_code] ?? 'A second check is needed before continuing.';
   const goHome = () => { reset(); history.replace('/welcome'); };
-  const retake = () => { reset(); history.replace('/capture'); };
+  // Go straight back to the camera. Do NOT reset() here: nulling lastResult would
+  // trip the redirect-to-welcome effect above and bounce the user to the homepage.
+  // A fresh capture overwrites the result, so the old one lingering is harmless.
+  const retake = () => { history.replace('/capture'); };
 
   return (
     <IonPage>
