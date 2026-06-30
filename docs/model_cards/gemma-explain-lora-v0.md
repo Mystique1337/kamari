@@ -55,6 +55,13 @@ in-language generation by the model. (An earlier v0 eval showed 0.0 across the b
 through the buggy `generate()` path; those numbers are superseded.) Non-English strings still benefit
 from a native review.
 
+## Training curves
+Pulled from the Weights & Biases run (project `kamari`, run `gemma4b-lora-r32`). Cross-entropy loss
+converges from 3.00 to a best eval loss of 0.087, and mean token accuracy rises to 96.3%, with train
+and eval tracking closely across 675 steps (3 epochs).
+
+![Gemma training curves](https://raw.githubusercontent.com/Mystique1337/kamari/main/docs/assets/training/gemma_training_curves.png)
+
 ## Serving
 Load base Gemma 4 + this adapter, `merge_and_unload()`, and decode greedily token by token (avoid
 `generate()`). On any validation failure, return a deterministic safe fallback so the caller always

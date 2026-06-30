@@ -42,6 +42,13 @@ MAE by skin band: very_light 5.46, light 5.72, intermediate 5.50, tan 5.99, brow
 MAE by age band: 0-12 4.04, 13-15 6.10, 16-17 5.37, 18-20 4.85, 21-25 4.30, 26-35 5.22, 36-50 6.67,
 51+ 8.51. GPU eval latency p50 14.2 ms.
 
+## Training curves
+Pulled from the Weights & Biases run (project `kamari`, run `cnn-tf_efficientnetv2_s`). Training loss
+is a heteroscedastic Gaussian NLL, so it is allowed to go negative as the variance head sharpens;
+validation MAE falls to 5.74 and the safety metric (MPTR@18) is tracked alongside it.
+
+![CNN training curves](https://raw.githubusercontent.com/Mystique1337/kamari/main/docs/assets/training/cnn_training_curves.png)
+
 ## Limitations and safety
 MAE is competitive, but **MPTR@18 is high**: about a third of true minors are scored as adults, and
 higher for dark and brown skin. So the CNN must not gate alone. Kámárí mitigates this with a

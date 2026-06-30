@@ -107,6 +107,11 @@ Both runs are tracked in **Weights & Biases** (project `kamari`). The CNN run (3
 H200, ~15 min) logs the benchmark numbers above; the Gemma run (3 epochs / 675 steps, ~35 min)
 converges to a best eval loss of **0.087** at **96.3%** token accuracy.
 
+**Training curves** (pulled from the W&B runs; raw history in [`docs/assets/training`](docs/assets/training)):
+
+![CNN training curves](docs/assets/training/cnn_training_curves.png)
+![Gemma training curves](docs/assets/training/gemma_training_curves.png)
+
 ## Dataset and benchmark (Kámárí-Safe Open v0)
 Built from open, license-checked face datasets with an auto label-quality gate, MTCNN face crops,
 skin-tone (ITA) banding, and a leakage-free split. Composition: ~480,828 kept rows; 24,753 exact-age

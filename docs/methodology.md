@@ -63,6 +63,10 @@ the CNN to gate alone. Kámárí treats the CNN as a signal, not a verdict: the 
 conservative through the 18 to 21 band, low-confidence and borderline cases route to liveness or a
 guardian check, and MPTR is the metric we optimize against.
 
+**Training curves** (from the W&B run; raw history in `docs/assets/training/cnn_history.csv`):
+
+![CNN training curves](assets/training/cnn_training_curves.png)
+
 ## 3. Policy engine
 Ordered, fail-safe rules (thresholds: block p(under-18) 0.70, challenge age 21, uncertainty 0.28,
 min quality 0.40):
@@ -98,6 +102,10 @@ correctness 1.00, invented-code rate 0.00. The endpoint validates and falls back
 template on any model failure, so the system always returns valid, schema-correct, policy-consistent
 JSON; language correctness reflects in-language generation. (An earlier eval showed 0.0 because it ran
 through the buggy `generate()` path; superseded.) Non-English strings still benefit from a native review.
+
+**Training curves** (from the W&B run; raw history in `docs/assets/training/gemma_history.csv`):
+
+![Gemma training curves](assets/training/gemma_training_curves.png)
 
 ## 5. Serving
 - **CNN (CPU, always-on):** loads the PyTorch checkpoint, detects and crops the face with an OpenCV
