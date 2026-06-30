@@ -20,6 +20,7 @@ stored. Open source under **Apache-2.0**, with a managed API you can pay for by 
 
 **Live:** web app at **https://kamari.shinzii.tech**, API at **https://kamari-api.shinzii.tech**.
 **Download:** [Android APK](https://github.com/Mystique1337/kamari/releases/latest/download/kamari.apk).
+**Explainer Video:** [Demo Video](https://www.youtube.com/watch?v=qWuPgGoRub4)
 
 ## Contents
 - [How it works](#how-it-works) · [Decisions](#decisions) · [Repository layout](#repository-layout)
