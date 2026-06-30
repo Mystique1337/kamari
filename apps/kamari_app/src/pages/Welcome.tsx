@@ -61,13 +61,14 @@ const PLANS = [
 ];
 
 const HF = 'https://huggingface.co/Shinzmann';
+const HF_DS = 'https://huggingface.co/datasets/Shinzmann';
 // Always-latest Android build, published by CI on every push to main.
 const APK_URL = 'https://github.com/Mystique1337/kamari/releases/latest/download/kamari.apk';
 const ARTIFACTS = [
   { tag: 'Model', title: 'CNN age model', desc: 'EfficientNetV2-S. MAE 6.03, with the MPTR safety metric.', href: `${HF}/cnn-age-v0` },
   { tag: 'Model', title: 'Gemma explanation LoRA', desc: 'Strict-JSON, multilingual decision messages.', href: `${HF}/gemma-explain-lora-v0` },
-  { tag: 'Benchmark', title: 'Kámárí-Safe Open v0', desc: 'Fairness slices and the 13 to 21 boundary.', href: `${HF}/kamari-safe-open-v0` },
-  { tag: 'Dataset', title: 'Dataset registry', desc: 'Provenance, licences, and the data manifest.', href: `${HF}/dataset-registry-v0` },
+  { tag: 'Benchmark', title: 'Kámárí-Safe Open v0', desc: 'Fairness slices and the 13 to 21 boundary.', href: `${HF_DS}/kamari-safe-open-v0` },
+  { tag: 'Dataset', title: 'Dataset registry', desc: 'Provenance, licences, and the data manifest.', href: `${HF_DS}/dataset-registry-v0` },
 ];
 
 const TEAM = [
